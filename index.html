@@ -1,1609 +1,248 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>منظّم المهمات اليومية</title>
-  <link rel="icon" type="image/jpeg" href="/icon.jpg" />
-  <link rel="apple-touch-icon" href="/icon.jpg" />
-  <meta name="description" content="تطبيق لتنظيم المهمات اليومية مع شريط قابل للتمرير، وخاصية التذكير والإشعارات مع رسائل توضيحية بالساعات والدقائق والأيام، ودعم 5 لغات (العربية، الفرنسية، الإنجليزية، الصينية، الإسبانية)، واقتراحات ذكية وتمييز تاريخ اليوم." />
-  <meta property="og:title" content="منظّم المهمات اليومية" />
-  <meta property="og:image" content="/icon.jpg" />
-  <meta property="og:description" content="تطبيق لتنظيم المهمات اليومية مع شريط قابل للتمرير، وخاصية التذكير والإشعارات، ودعم 5 لغات." />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Cairo', 'sans-serif'],
-          }
-        }
-      }
-    };
-  </script>
   <style>
-    body { font-family: 'Cairo', sans-serif; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .thin-scrollbar::-webkit-scrollbar { height: 6px; }
-    .thin-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: #f8fafc; color: #1e293b; padding: 16px; max-width: 600px; margin: auto; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    h1 { font-size: 1.25rem; font-weight: 700; color: #0f172a; }
+    .badge { background: #ecfdf5; color: #059669; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+    
+    /* شريط التاريخ */
+    .date-nav { background: #fff; padding: 12px; border-radius: 14px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .date-btn { background: #f1f5f9; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
+    .today-btn { background: #10b981; color: white; }
+
+    /* صندوق الإضافة */
+    .card { background: #fff; padding: 16px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .input-group { position: relative; margin-bottom: 10px; }
+    input[type="text"], input[type="time"] { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; outline: none; }
+    input[type="text"]:focus { border-color: #10b981; }
+    
+    /* الاقتراحات الذكية */
+    .suggestions { position: absolute; top: 100%; right: 0; left: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; max-height: 160px; overflow-y: auto; z-index: 10; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: none; }
+    .suggestion-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f8fafc; font-size: 0.9rem; }
+    .suggestion-item:hover { background: #f0fdf4; }
+
+    /* خيار العادة والتكرار */
+    .habit-opt { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #475569; margin: 10px 0; }
+    .btn-add { width: 100%; background: #10b981; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+    .btn-add:hover { background: #059669; }
+
+    /* قائمة المهمات */
+    .task-item { background: #fff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .task-item.completed { background: #f8fafc; opacity: 0.6; }
+    .task-item.completed .task-text { text-decoration: line-through; }
+    .task-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+    .task-tag { font-size: 0.75rem; background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; }
+    .btn-del { background: none; border: none; color: #ef4444; font-size: 1.1rem; cursor: pointer; }
+    .empty { text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px; }
   </style>
 </head>
-<body class="bg-slate-50/80 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen flex flex-col font-sans antialiased">
+<body>
 
-  <!-- Header -->
-  <header class="bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-30 shadow-xs">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
-      <div class="flex items-center">
-        <img id="app-brand-icon" src="/icon.jpg" alt="Icon" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl shadow-xs select-none object-cover" />
-      </div>
-
-      <div class="flex items-center gap-2 sm:gap-2.5">
-        <!-- PRO Badge & Settings -->
-        <div class="flex items-center gap-1.5" id="pro-header-actions">
-          <button id="pro-badge-btn" type="button" class="hidden px-2.5 py-1.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-xs font-bold items-center gap-1.5 transition cursor-pointer">
-            <span>👑</span> <span id="pro-badge-text">PRO</span>
-          </button>
-          <button id="open-config-btn" type="button" title="إعدادات الميزة المدفوعة" class="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-amber-600 text-xs transition cursor-pointer">
-            👑
-          </button>
-        </div>
-
-        <!-- Today's Stats Badge -->
-        <div id="header-today-stats" class="flex items-center gap-1.5 text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-3 py-1.5 rounded-full border border-emerald-200/60 shrink-0">
-          <span>✓</span> <span id="today-stats-counter">0/0</span>
-        </div>
-
-        <!-- Language Selector -->
-        <div class="relative">
-          <button id="lang-menu-btn" type="button" class="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
-            <span id="current-lang-flag">🇸🇦</span>
-            <span id="current-lang-name" class="hidden sm:inline">العربية</span>
-          </button>
-          <div id="lang-dropdown" class="hidden absolute left-0 rtl:left-0 ltr:right-0 mt-2 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl py-1 z-50"></div>
-        </div>
-
-        <!-- Notification Bell & Dropdown -->
-        <div class="relative">
-          <button id="bell-btn" type="button" class="relative p-2 rounded-xl border transition cursor-pointer bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100">
-            <span class="text-base">🔔</span>
-            <span id="bell-badge" class="hidden absolute -top-1.5 -right-1.5 px-1.5 py-0.2 text-[10px] font-bold bg-amber-600 text-white rounded-full min-w-4 text-center">0</span>
-          </button>
-
-          <!-- Descending Notification Center Dropdown -->
-          <div id="notification-dropdown" class="hidden absolute top-full mt-2 left-0 rtl:left-0 ltr:right-0 w-[calc(100vw-2rem)] max-w-sm sm:w-96 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-2xl space-y-3 z-50">
-            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5 text-xs">
-              <div class="flex items-center gap-2">
-                <span class="p-1 rounded-lg bg-amber-50 text-amber-600">🔔</span>
-                <span id="notif-header-title" class="font-bold text-slate-800 dark:text-slate-100">الإشعارات والتذكيرات</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <button id="mark-all-read-btn" class="text-emerald-700 text-[11px] font-semibold hover:underline">تحديد الكل كمقروء</button>
-                <button id="clear-all-notifs-btn" class="text-slate-400 hover:text-rose-600 text-[11px]">مسح</button>
-              </div>
-            </div>
-            <div id="notifications-list" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <header>
+    <h1>منظّم المهمات اليومية</h1>
+    <div id="statsBadge" class="badge">0 / 0 مكتملة</div>
   </header>
 
-  <!-- Main Content -->
-  <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+  <!-- شريط التاريخ والتنقل -->
+  <div class="date-nav">
+    <button class="date-btn" onclick="changeDate(-1)">◀ السابق</button>
+    <div style="text-align: center;">
+      <span id="dateLabel" style="font-weight: 600;">اليوم</span>
+      <button id="todayJumpBtn" class="date-btn today-btn" style="display:none; margin-right: 6px; padding: 2px 8px; font-size:0.75rem;" onclick="goToday()">اليوم</button>
+    </div>
+    <button class="date-btn" onclick="changeDate(1)">التالي ▶</button>
+  </div>
 
-    <!-- Date Navigator Card -->
-    <div id="date-navigator-card" class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm select-none">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-        <div>
-          <div class="flex items-center gap-2">
-            <h2 id="current-date-full-label" class="text-lg font-bold text-slate-900 dark:text-white">...</h2>
-            <span id="relative-date-tag" class="hidden text-xs px-2.5 py-0.5 rounded-full font-bold shadow-xs"></span>
-            <span id="past-lock-icon" class="hidden p-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200" title="الأيام السابقة مقفلة للعرض فقط">🔒</span>
-          </div>
-          <p id="current-date-stats-label" class="text-xs text-slate-500 mt-0.5"></p>
-        </div>
-
-        <div class="flex items-center gap-1.5 self-end sm:self-auto">
-          <button id="back-today-btn" type="button" class="hidden text-xs font-semibold px-2.5 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition cursor-pointer">
-            ↺ اليوم
-          </button>
-          <div class="relative inline-block">
-            <input id="native-date-picker" type="date" class="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10" />
-            <div class="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 rounded-xl text-xs font-medium cursor-pointer">📅</div>
-          </div>
-          <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-0.5">
-            <button id="prev-day-btn" class="p-1.5 text-slate-600 hover:bg-white rounded-lg">◀</button>
-            <button id="next-day-btn" class="p-1.5 text-slate-600 hover:bg-white rounded-lg">▶</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Draggable Days Tape -->
-      <div class="relative mt-3 group">
-        <div id="draggable-days-container" class="flex items-stretch gap-2.5 overflow-x-auto py-2 px-1 no-scrollbar cursor-grab active:cursor-grabbing"></div>
-      </div>
-
-      <!-- Day Completion Progress Bar -->
-      <div id="day-progress-container" class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
-        <div class="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-          <div id="day-progress-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
-        </div>
-        <span id="day-progress-text" class="text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0">0%</span>
-      </div>
+  <!-- إضافة مهمة جديدة -->
+  <div class="card" id="inputCard">
+    <div class="input-group">
+      <input type="text" id="taskInput" placeholder="اكتب اسم المهمة (ستظهر الاقتراحات بعد الحرف الأول)..." autocomplete="off" />
+      <div id="suggestionsList" class="suggestions"></div>
     </div>
 
-    <!-- Habit Input Box -->
-    <div id="habit-input-container"></div>
-
-    <!-- Habits Horizontal Scroll Strip -->
-    <div id="habits-section" class="space-y-3">
-      <div class="flex items-center justify-between px-1">
-        <div class="flex items-center gap-2 flex-wrap text-xs font-bold text-slate-700 dark:text-slate-300">
-          <span id="strip-title-count">شريط المهمات (0)</span>
-          <span id="strip-completed-count" class="text-emerald-700 font-semibold flex items-center gap-1"></span>
-          <span id="strip-locked-badge" class="hidden p-1 rounded-md bg-slate-100 text-slate-500 border border-slate-200">🔒</span>
-        </div>
-        <div id="strip-scroll-controls" class="flex items-center gap-1">
-          <button id="scroll-right-btn" class="p-1.5 bg-white dark:bg-slate-900 border border-slate-200 rounded-lg hover:bg-slate-100">◀</button>
-          <button id="scroll-left-btn" class="p-1.5 bg-white dark:bg-slate-900 border border-slate-200 rounded-lg hover:bg-slate-100">▶</button>
-        </div>
-      </div>
-
-      <div id="habits-scroll-strip" class="flex items-stretch gap-3.5 overflow-x-auto pb-4 pt-1 px-1 thin-scrollbar scroll-smooth"></div>
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+      <input type="time" id="timeInput" />
     </div>
 
-  </main>
+    <div class="habit-opt">
+      <input type="checkbox" id="isHabitCheck" />
+      <label for="isHabitCheck">تكرار كعادة يومية (لمدة 21 يوماً)</label>
+    </div>
 
-  <!-- Modals Container -->
-  <div id="modals-root"></div>
+    <button class="btn-add" onclick="addTask()">＋ إضافة المهمة</button>
+  </div>
 
-  <!-- Single File Embedded JavaScript Application Logic -->
+  <!-- قائمة المهمات لليوم المحدد -->
+  <div id="tasksList"></div>
+
   <script>
-    // --- Translations (5 Languages) ---
-    const TRANSLATIONS = {
-      ar: {
-        appName: 'منظّم المهمات اليومية',
-        today: 'اليوم',
-        yesterday: 'أمس',
-        tomorrow: 'غداً',
-        completed: 'مكتملة',
-        addHabitForDate: 'إضافة مهمة لتاريخ',
-        habitPlaceholder: 'اكتب المهمة هنا...',
-        timeOptional: 'الوقت (اختياري):',
-        addHabitBtn: 'إضافة المهمة',
-        scheduleAsHabit: 'برمجة المهمة كعادة متكررة',
-        habitFeatureDesc: 'جدولة المهمة لتتكرر في عدة أيام ولمدة زمنية مختارة',
-        repeatDays: 'أيام التكرار',
-        allDays: 'كل يوم',
-        workdays: 'أيام العمل',
-        weekend: 'عطلة نهاية الأسبوع',
-        durationPeriod: 'المدة الزمنية',
-        duration1Week: 'أسبوع (7 أيام)',
-        duration2Weeks: 'أسبوعين (14 يوماً)',
-        duration21Days: '21 يوماً (بناء عادة)',
-        duration1Month: 'شهر (30 يوماً)',
-        duration3Months: '3 أشهر (90 يوماً)',
-        custom: 'مخصص',
-        daysUnit: 'يوم',
-        hoursUnit: 'ساعة',
-        minutesUnit: 'دقيقة',
-        reminderQuestion: 'هل تريد مني تذكيرك؟',
-        sameTime: 'في نفس الوقت',
-        before15m: 'قبل 15 دقيقة',
-        before30m: 'قبل 30 دقيقة',
-        before1h: 'قبل ساعة',
-        before1d: 'قبل يوم',
-        habitsStrip: 'شريط المهمات',
-        noHabits: 'لا توجد مهمات مسجلة لهذا التاريخ',
-        pastDaysLocked: 'الأيام السابقة مقفلة وغير قابلة للتعديل أو الحذف',
-        deleteHabit: 'حذف المهمة',
-        deleteOnlyThis: 'حذف هذه المهمة فقط',
-        deleteAllSeries: 'حذف كامل سلسلة العادة',
-        proBadge: 'PRO',
-        proUnlocked: 'مفعّلة PRO',
-        proFeature: 'ميزة مدفوعة PRO',
-        upgradeToProBtn: 'الترقية الآن إلى PRO',
-        testUnlockBtn: 'تفعيل تجريبي للمطور / اختبار الميزة',
-        restorePurchases: 'استعادة المشتريات',
-        monetizationTitle: 'ترقية ميزة برمجة العادات (PRO)',
-        monetizationSubtitle: 'تحويل المهام إلى عادات متكررة وجدولتها عبر الشهور ميزة حصرية للاشتراك المدفوع',
-        configTitle: 'إعدادات الميزة المدفوعة والتسييل',
-        configToggle: 'جعل ميزة العادات مدفوعة عند رفع التطبيق',
-        configDesc: 'عند التفعيل، تتطلب ميزة تحويل المهمة إلى عادة اشتراكاً مدفوعاً أو ترقية PRO للمستخدمين',
-        paidStatus: 'حالة ميزة العادات',
-        paid: 'مدفوعة (PRO)',
-        free: 'مجانية للجميع',
-        dismiss: 'إغلاق',
-        markDone: 'تم الإنجاز',
-        markAsSeen: 'تمت الرؤية',
-        days: ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
-        months: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']
-      },
-      en: {
-        appName: 'Daily Habits Tracker',
-        today: 'Today',
-        yesterday: 'Yesterday',
-        tomorrow: 'Tomorrow',
-        completed: 'completed',
-        addHabitForDate: 'Add habit for date',
-        habitPlaceholder: 'Write your habit here...',
-        timeOptional: 'Time (optional):',
-        addHabitBtn: 'Add Habit',
-        scheduleAsHabit: 'Schedule as recurring habit',
-        habitFeatureDesc: 'Schedule this task across multiple days for a chosen duration',
-        repeatDays: 'Repeat days',
-        allDays: 'Every day',
-        workdays: 'Workdays',
-        weekend: 'Weekend',
-        durationPeriod: 'Duration',
-        duration1Week: '1 week (7 days)',
-        duration2Weeks: '2 weeks (14 days)',
-        duration21Days: '21 days (build habit)',
-        duration1Month: '1 month (30 days)',
-        duration3Months: '3 months (90 days)',
-        custom: 'Custom',
-        daysUnit: 'day',
-        hoursUnit: 'hour',
-        minutesUnit: 'min',
-        reminderQuestion: 'Do you want me to remind you?',
-        sameTime: 'At exact time',
-        before15m: '15 mins before',
-        before30m: '30 mins before',
-        before1h: '1 hour before',
-        before1d: '1 day before',
-        habitsStrip: 'Habits Strip',
-        noHabits: 'No habits recorded for this date',
-        pastDaysLocked: 'Past days are locked and read-only',
-        deleteHabit: 'Delete habit',
-        deleteOnlyThis: 'Delete only this task',
-        deleteAllSeries: 'Delete entire habit series',
-        proBadge: 'PRO',
-        proUnlocked: 'PRO Active',
-        proFeature: 'PRO Feature',
-        upgradeToProBtn: 'Upgrade to PRO Now',
-        testUnlockBtn: 'Developer Test Unlock / Instant Preview',
-        restorePurchases: 'Restore Purchases',
-        monetizationTitle: 'Upgrade Habit Feature (PRO)',
-        monetizationSubtitle: 'Programming recurring habits is an exclusive PRO subscription feature',
-        configTitle: 'Monetization & PRO Settings',
-        configToggle: 'Make habit feature paid when deploying app',
-        configDesc: 'When enabled, transforming a task into a habit requires a PRO upgrade',
-        paidStatus: 'Feature Status',
-        paid: 'Paid (PRO)',
-        free: 'Free for all',
-        dismiss: 'Dismiss',
-        markDone: 'Done',
-        markAsSeen: 'Seen',
-        days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-        months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-      },
-      fr: {
-        appName: 'Organiseur d’habitudes',
-        today: 'Aujourd’hui',
-        yesterday: 'Hier',
-        tomorrow: 'Demain',
-        completed: 'terminée(s)',
-        addHabitForDate: 'Ajouter une habitude pour le',
-        habitPlaceholder: 'Écrivez l’habitude ici...',
-        timeOptional: 'Heure (optionnel) :',
-        addHabitBtn: 'Ajouter l’habitude',
-        scheduleAsHabit: 'Programmer comme habitude récurrente',
-        habitFeatureDesc: 'Planifier la tâche sur plusieurs jours et pour une durée choisie',
-        repeatDays: 'Jours de répétition',
-        allDays: 'Tous les jours',
-        workdays: 'Jours ouvrés',
-        weekend: 'Week-end',
-        durationPeriod: 'Durée',
-        duration1Week: '1 semaine (7 jours)',
-        duration2Weeks: '2 semaines (14 jours)',
-        duration21Days: '21 jours (création d’habitude)',
-        duration1Month: '1 mois (30 jours)',
-        duration3Months: '3 mois (90 jours)',
-        custom: 'Personnalisé',
-        daysUnit: 'j',
-        hoursUnit: 'h',
-        minutesUnit: 'min',
-        reminderQuestion: 'Voulez-vous que je vous le rappelle ?',
-        sameTime: 'À l’heure exacte',
-        before15m: '15 min avant',
-        before30m: '30 min avant',
-        before1h: '1 heure avant',
-        before1d: '1 jour avant',
-        habitsStrip: 'Bande des habitudes',
-        noHabits: 'Aucune habitude pour cette date',
-        pastDaysLocked: 'Les jours passés sont verrouillés en lecture seule',
-        deleteHabit: 'Supprimer l’habitude',
-        deleteOnlyThis: 'Supprimer cette tâche uniquement',
-        deleteAllSeries: 'Supprimer toute la série',
-        proBadge: 'PRO',
-        proUnlocked: 'PRO Activé',
-        proFeature: 'Fonctionnalité PRO',
-        upgradeToProBtn: 'Passer à PRO maintenant',
-        testUnlockBtn: 'Déverrouillage test développeur',
-        restorePurchases: 'Restaurer les achats',
-        monetizationTitle: 'Passer à la fonctionnalité PRO',
-        monetizationSubtitle: 'Transformer les tâches en habitudes récurrentes est exclusif à PRO',
-        configTitle: 'Paramètres de monétisation & PRO',
-        configToggle: 'Rendre la fonction Habitude payante au déploiement',
-        configDesc: 'Une fois activé, transformer une tâche en habitude nécessite un abonnement PRO',
-        paidStatus: 'Statut de la fonctionnalité',
-        paid: 'Payante (PRO)',
-        free: 'Gratuite pour tous',
-        dismiss: 'Fermer',
-        markDone: 'Terminé',
-        markAsSeen: 'Vu',
-        days: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
-        months: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
-      },
-      zh: {
-        appName: '每日习惯打卡',
-        today: '今天',
-        yesterday: '昨天',
-        tomorrow: '明天',
-        completed: '已完成',
-        addHabitForDate: '添加习惯 - 日期',
-        habitPlaceholder: '在此输入您的习惯...',
-        timeOptional: '时间（可选）：',
-        addHabitBtn: '添加习惯',
-        scheduleAsHabit: '设置为规律习惯',
-        habitFeatureDesc: '将该任务安排到多个日期并自定义持续时间',
-        repeatDays: '重复日期',
-        allDays: '每天',
-        workdays: '工作日',
-        weekend: '周末',
-        durationPeriod: '持续周期',
-        duration1Week: '1周（7天）',
-        duration2Weeks: '2周（14天）',
-        duration21Days: '21天（习惯养成）',
-        duration1Month: '1个月（30天）',
-        duration3Months: '3个月（90天）',
-        custom: '自定义',
-        daysUnit: '天',
-        hoursUnit: '小时',
-        minutesUnit: '分钟',
-        reminderQuestion: '需要我提醒您吗？',
-        sameTime: '准时提醒',
-        before15m: '提前15分钟',
-        before30m: '提前30分钟',
-        before1h: '提前1小时',
-        before1d: '提前1天',
-        habitsStrip: '习惯列表',
-        noHabits: '此日期暂无习惯记录',
-        pastDaysLocked: '过去的日期已锁定仅供查看',
-        deleteHabit: '删除习惯',
-        deleteOnlyThis: '仅删除此任务',
-        deleteAllSeries: '删除该习惯系列',
-        proBadge: 'PRO',
-        proUnlocked: 'PRO 已激活',
-        proFeature: 'PRO 付费功能',
-        upgradeToProBtn: '立即升级 PRO',
-        testUnlockBtn: '开发者测试解锁 / 试用',
-        restorePurchases: '恢复购买',
-        monetizationTitle: '升级习惯养成功能 (PRO)',
-        monetizationSubtitle: '将任务转化为规律习惯并排程为 PRO 高级会员专属功能',
-        configTitle: '变现与 PRO 设置',
-        configToggle: '在发布时将习惯功能设为付费',
-        configDesc: '开启后，将任务转化为习惯需要 PRO 会员',
-        paidStatus: '功能状态',
-        paid: '付费 (PRO)',
-        free: '全员免费',
-        dismiss: '关闭',
-        markDone: '标记完成',
-        markAsSeen: '标为已读',
-        days: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
-        months: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
-      },
-      es: {
-        appName: 'Organizador de Hábitos',
-        today: 'Hoy',
-        yesterday: 'Ayer',
-        tomorrow: 'Mañana',
-        completed: 'completada(s)',
-        addHabitForDate: 'Agregar hábito para el',
-        habitPlaceholder: 'Escribe el hábito aquí...',
-        timeOptional: 'Hora (opcional):',
-        addHabitBtn: 'Agregar hábito',
-        scheduleAsHabit: 'Programar como hábito recurrente',
-        habitFeatureDesc: 'Programar la tarea en múltiples días y por una duración elegida',
-        repeatDays: 'Días de repetición',
-        allDays: 'Todos los días',
-        workdays: 'Días laborales',
-        weekend: 'Fin de semana',
-        durationPeriod: 'Duración',
-        duration1Week: '1 semana (7 días)',
-        duration2Weeks: '2 semanas (14 días)',
-        duration21Days: '21 días (crear hábito)',
-        duration1Month: '1 mes (30 días)',
-        duration3Months: '3 meses (90 días)',
-        custom: 'Personalizado',
-        daysUnit: 'día',
-        hoursUnit: 'hora',
-        minutesUnit: 'min',
-        reminderQuestion: '¿Quieres que te lo recuerde?',
-        sameTime: 'A la hora exacta',
-        before15m: '15 min antes',
-        before30m: '30 min antes',
-        before1h: '1 hora antes',
-        before1d: '1 día antes',
-        habitsStrip: 'Tira de hábitos',
-        noHabits: 'No hay hábitos para esta fecha',
-        pastDaysLocked: 'Los días pasados están bloqueados en solo lectura',
-        deleteHabit: 'Eliminar hábito',
-        deleteOnlyThis: 'Eliminar solo esta tarea',
-        deleteAllSeries: 'Eliminar toda la serie',
-        proBadge: 'PRO',
-        proUnlocked: 'PRO Activo',
-        proFeature: 'Función PRO',
-        upgradeToProBtn: 'Mejorar a PRO ahora',
-        testUnlockBtn: 'Desbloqueo de prueba para desarrollador',
-        restorePurchases: 'Restaurar compras',
-        monetizationTitle: 'Mejorar a función de Hábitos (PRO)',
-        monetizationSubtitle: 'Convertir tareas en hábitos recurrentes es exclusivo de PRO',
-        configTitle: 'Configuración de Monetización & PRO',
-        configToggle: 'Hacer que la función sea de pago al desplegar',
-        configDesc: 'Cuando está habilitado, transformar tarea en hábito requiere PRO',
-        paidStatus: 'Estado de la función',
-        paid: 'De pago (PRO)',
-        free: 'Gratis para todos',
-        dismiss: 'Cerrar',
-        markDone: 'Completado',
-        markAsSeen: 'Visto',
-        days: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-        months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-      }
-    };
-
-    const LANGUAGES = [
-      { code: 'ar', name: 'العربية', flag: '🇸🇦', dir: 'rtl' },
-      { code: 'en', name: 'English', flag: '🇬🇧', dir: 'ltr' },
-      { code: 'fr', name: 'Français', flag: '🇫🇷', dir: 'ltr' },
-      { code: 'zh', name: '中文', flag: '🇨🇳', dir: 'ltr' },
-      { code: 'es', name: 'Español', flag: '🇪🇸', dir: 'ltr' },
-    ];
-
-    // Initial Suggestions Database
+    // الاقتراحات السابقة الجاهزة
     const DEFAULT_SUGGESTIONS = [
-      { title: 'صلاة الفجر وقراءة أذكار الصباح', defaultTime: '05:30', usageCount: 15 },
-      { title: 'ممارسة التمارين الرياضية أو المشي', defaultTime: '06:30', usageCount: 12 },
-      { title: 'قراءة ورد يومي من القرآن الكريم', defaultTime: '07:00', usageCount: 18 },
-      { title: 'شرب لترين من الماء على مدار اليوم', defaultTime: '08:00', usageCount: 20 },
-      { title: 'التخطيط لمهام اليوم وكتابة الأولويات', defaultTime: '08:30', usageCount: 14 },
-      { title: 'جلسة عمل وتركيز', defaultTime: '09:00', usageCount: 9 },
-      { title: 'تعلم مهارة جديدة', defaultTime: '17:00', usageCount: 8 },
-      { title: 'أذكار المساء والاستغفار', defaultTime: '17:30', usageCount: 16 },
-      { title: 'جلسة عائلية والتواصل مع الأقارب', defaultTime: '19:30', usageCount: 6 },
-      { title: 'قراءة كتاب مفيد (20 صفحة)', defaultTime: '21:00', usageCount: 10 },
-      { title: 'تدوين اليوميات', defaultTime: '22:00', usageCount: 9 },
-      { title: 'الابتعاد عن الشاشات قبل النوم', defaultTime: '22:30', usageCount: 11 },
-      { title: 'النوم المبكر', defaultTime: '23:00', usageCount: 13 },
+      'صلاة الفجر وقراءة أذكار الصباح',
+      'ممارسة التمارين الرياضية أو المشي',
+      'قراءة ورد يومي من القرآن الكريم',
+      'شرب لترين من الماء على مدار اليوم',
+      'التخطيط لمهام اليوم وكتابة الأولويات',
+      'قراءة كتاب مفيد (20 صفحة)',
+      'أذكار المساء والاستغفار',
+      'النوم المبكر'
     ];
 
-    // State Variables
-    let currentLang = localStorage.getItem('habits_organizer_selected_lang_v1') || 'ar';
-    let selectedDate = getTodayDateKey();
-    let habits = loadHabits();
-    let suggestions = loadSuggestions();
-    let notifications = loadNotifications();
-    let isHabitPaywalled = localStorage.getItem('app_habit_feature_is_paid') !== 'false';
-    let isProUser = localStorage.getItem('app_user_is_pro') === 'true';
+    let tasks = JSON.parse(localStorage.getItem('my_simple_tasks') || '[]');
+    let currentDate = getTodayStr();
 
-    // UI Input Box State
-    let inputTitle = '';
-    let inputTime = '';
-    let inputReminderEnabled = false;
-    let inputReminderOffset = 15;
-    let inputReminderCustomVal = 1;
-    let inputReminderCustomUnit = 'hours';
-    let inputHabitEnabled = false;
-    let inputHabitDays = [0, 1, 2, 3, 4, 5, 6];
-    let inputHabitDurationPreset = 21;
-    let inputHabitCustomVal = 30;
-    let inputHabitCustomUnit = 'days';
-
-    // Date Utilities
-    function formatToDateKey(date) {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-    function parseDateKey(key) {
-      const [y, m, d] = key.split('-').map(Number);
-      return new Date(y, m - 1, d);
-    }
-    function getTodayDateKey() {
-      return formatToDateKey(new Date());
-    }
-    function isPastDate(key) {
-      return key < getTodayDateKey();
-    }
-    function isMoreThan24HoursAhead(dateKey, timeStr) {
-      const target = parseDateKey(dateKey);
-      if (timeStr && timeStr.includes(':')) {
-        const [h, m] = timeStr.split(':').map(Number);
-        target.setHours(h, m, 0, 0);
-      } else {
-        target.setHours(9, 0, 0, 0);
-      }
-      return target.getTime() - Date.now() > 24 * 60 * 60 * 1000;
+    function getTodayStr() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     }
 
-    function normalizeText(text) {
-      return (text || '').toLowerCase().replace(/[إأآا]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').trim();
+    function saveTasks() {
+      localStorage.setItem('my_simple_tasks', JSON.stringify(tasks));
+      render();
     }
 
-    // Storage Management
-    function loadHabits() {
-      try {
-        const data = localStorage.getItem('habits_organizer_items_v2');
-        if (data) return JSON.parse(data);
-      } catch (e) {}
-      const today = getTodayDateKey();
-      return [
-        { id: 'init-1', title: 'صلاة الفجر وقراءة أذكار الصباح', date: today, time: '05:30', completed: true, createdAt: 1000 },
-        { id: 'init-2', title: 'تمارين رياضية صباحية (كارديو)', date: today, time: '07:00', completed: false, createdAt: 2000 },
-        { id: 'init-3', title: 'قراءة 20 صفحة من كتاب تطوير الذات', date: today, time: '18:00', completed: false, createdAt: 3000 },
-        { id: 'init-4', title: 'شرب 2 لتر من الماء خلال اليوم', date: today, completed: false, createdAt: 4000 }
-      ];
-    }
-    function saveHabits() {
-      localStorage.setItem('habits_organizer_items_v2', JSON.stringify(habits));
-    }
-    function loadSuggestions() {
-      try {
-        const data = localStorage.getItem('habits_organizer_suggestions_v2');
-        if (data) return JSON.parse(data);
-      } catch (e) {}
-      return DEFAULT_SUGGESTIONS;
-    }
-    function saveSuggestions() {
-      localStorage.setItem('habits_organizer_suggestions_v2', JSON.stringify(suggestions));
-    }
-    function loadNotifications() {
-      try {
-        const data = localStorage.getItem('habits_organizer_inapp_notifications_v1');
-        if (data) return JSON.parse(data);
-      } catch (e) {}
-      return [];
-    }
-    function saveNotifications() {
-      localStorage.setItem('habits_organizer_inapp_notifications_v1', JSON.stringify(notifications));
+    function changeDate(delta) {
+      const parts = currentDate.split('-').map(Number);
+      const d = new Date(parts[0], parts[1]-1, parts[2] + delta);
+      currentDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      render();
     }
 
-    // Record Usage
-    function recordHabitUsage(title, time) {
-      const clean = title.trim();
-      if (!clean) return;
-      const norm = normalizeText(clean);
-      const idx = suggestions.findIndex(s => normalizeText(s.title) === norm);
-      if (idx >= 0) {
-        suggestions[idx].usageCount++;
-        suggestions[idx].lastUsed = Date.now();
-        if (time) suggestions[idx].defaultTime = time;
-      } else {
-        suggestions.unshift({ title: clean, defaultTime: time, usageCount: 1, lastUsed: Date.now() });
-      }
-      saveSuggestions();
+    function goToday() {
+      currentDate = getTodayStr();
+      render();
     }
 
-    // Stats
-    function getDateStats(dateKey) {
-      const dayHabits = habits.filter(h => h.date === dateKey);
-      const total = dayHabits.length;
-      const completed = dayHabits.filter(h => h.completed).length;
-      const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
-      return { total, completed, percentage };
-    }
+    function addTask() {
+      const input = document.getElementById('taskInput');
+      const timeInput = document.getElementById('timeInput');
+      const isHabit = document.getElementById('isHabitCheck').checked;
+      const title = input.value.trim();
 
-    // Date formatting helper
-    function getFormattedDate(dateKey) {
-      const d = parseDateKey(dateKey);
-      const t = TRANSLATIONS[currentLang];
-      const dayName = t.days[d.getDay()];
-      const dayNum = d.getDate();
-      const monthName = t.months[d.getMonth()];
-      const year = d.getFullYear();
-      const todayKey = getTodayDateKey();
-      
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yKey = formatToDateKey(yesterday);
+      if (!title) return;
 
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomKey = formatToDateKey(tomorrow);
-
-      let relativeLabel = '';
-      if (dateKey === todayKey) relativeLabel = t.today;
-      else if (dateKey === yKey) relativeLabel = t.yesterday;
-      else if (dateKey === tomKey) relativeLabel = t.tomorrow;
-
-      return {
-        dayName,
-        dayNum,
-        monthName,
-        year,
-        fullDate: `${dayName}، ${dayNum} ${monthName} ${year}`,
-        relativeLabel
-      };
-    }
-
-    // Remaining time formatter
-    function getRemainingTimeText(dateKey, timeStr) {
-      const target = parseDateKey(dateKey);
-      if (timeStr && timeStr.includes(':')) {
-        const [h, m] = timeStr.split(':').map(Number);
-        target.setHours(h, m, 0, 0);
-      } else {
-        target.setHours(9, 0, 0, 0);
-      }
-      const diffMs = target.getTime() - Date.now();
-      if (diffMs <= 30000) return currentLang === 'ar' ? 'حان موعد المهمة الآن!' : 'Due now!';
-      const totalMin = Math.round(diffMs / 60000);
-      if (totalMin < 60) return currentLang === 'ar' ? `متبقي ${totalMin} دقيقة` : `${totalMin}m left`;
-      if (totalMin < 1440) {
-        const h = Math.floor(totalMin / 60);
-        const m = totalMin % 60;
-        return currentLang === 'ar' ? `متبقي ${h} ساعة${m > 0 ? ' و ' + m + ' د' : ''}` : `${h}h ${m}m left`;
-      }
-      const days = Math.floor(totalMin / 1440);
-      return currentLang === 'ar' ? `متبقي ${days} يوم` : `${days} days left`;
-    }
-
-    // --- UI Renderers ---
-    function renderApp() {
-      const t = TRANSLATIONS[currentLang];
-      const isRtl = currentLang === 'ar';
-      document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
-      document.documentElement.lang = currentLang;
-
-      // Header language
-      const curLangObj = LANGUAGES.find(l => l.code === currentLang) || LANGUAGES[0];
-      document.getElementById('current-lang-flag').textContent = curLangObj.flag;
-      document.getElementById('current-lang-name').textContent = curLangObj.name;
-
-      // Header PRO state
-      const proBadgeBtn = document.getElementById('pro-badge-btn');
-      if (isProUser) {
-        proBadgeBtn.className = 'px-2.5 py-1.5 rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs';
-        document.getElementById('pro-badge-text').textContent = t.proBadge;
-        proBadgeBtn.onclick = () => openConfigModal();
-      } else if (isHabitPaywalled) {
-        proBadgeBtn.className = 'px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs';
-        document.getElementById('pro-badge-text').textContent = t.proBadge;
-        proBadgeBtn.onclick = () => openPaywallModal();
-      } else {
-        proBadgeBtn.className = 'hidden';
-      }
-
-      // Header today's count
-      const todayStats = getDateStats(getTodayDateKey());
-      document.getElementById('today-stats-counter').textContent = `${todayStats.completed}/${todayStats.total}`;
-
-      // Bell badge
-      const unreadCount = notifications.filter(n => !n.read).length;
-      const bellBadge = document.getElementById('bell-badge');
-      if (unreadCount > 0) {
-        bellBadge.textContent = unreadCount;
-        bellBadge.classList.remove('hidden');
-      } else {
-        bellBadge.classList.add('hidden');
-      }
-
-      renderDateNavigator();
-      renderHabitInputBox();
-      renderHabitsStrip();
-      renderNotificationsDropdown();
-    }
-
-    // Render Date Navigator
-    function renderDateNavigator() {
-      const t = TRANSLATIONS[currentLang];
-      const todayKey = getTodayDateKey();
-      const isPast = isPastDate(selectedDate);
-      const isToday = selectedDate === todayKey;
-      const formatted = getFormattedDate(selectedDate);
-      const stats = getDateStats(selectedDate);
-
-      document.getElementById('current-date-full-label').textContent = formatted.fullDate;
-      const relTag = document.getElementById('relative-date-tag');
-      if (formatted.relativeLabel) {
-        relTag.textContent = formatted.relativeLabel;
-        relTag.classList.remove('hidden');
-        relTag.className = `text-xs px-2.5 py-0.5 rounded-full font-bold shadow-xs ${
-          isToday ? 'bg-emerald-600 text-white animate-pulse' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-        }`;
-      } else {
-        relTag.classList.add('hidden');
-      }
-
-      const lockIcon = document.getElementById('past-lock-icon');
-      if (isPast) {
-        lockIcon.classList.remove('hidden');
-      } else {
-        lockIcon.classList.add('hidden');
-      }
-
-      document.getElementById('current-date-stats-label').textContent =
-        stats.total > 0
-          ? `${stats.completed} / ${stats.total} ${t.completed} (${stats.percentage}%)`
-          : t.noHabits;
-
-      const backTodayBtn = document.getElementById('back-today-btn');
-      if (!isToday) {
-        backTodayBtn.classList.remove('hidden');
-        backTodayBtn.textContent = `↺ ${t.today}`;
-      } else {
-        backTodayBtn.classList.add('hidden');
-      }
-
-      document.getElementById('native-date-picker').value = selectedDate;
-
-      // Progress bar
-      const progBar = document.getElementById('day-progress-bar');
-      const progText = document.getElementById('day-progress-text');
-      progBar.style.width = `${stats.percentage}%`;
-      progText.textContent = `${stats.percentage}%`;
-
-      // Draggable Tape Days List (-20 to +25 around today or selected)
-      const container = document.getElementById('draggable-days-container');
-      container.innerHTML = '';
-
-      const base = parseDateKey(todayKey);
-      const days = [];
-      for (let i = -20; i <= 25; i++) {
-        const cur = new Date(base);
-        cur.setDate(cur.getDate() + i);
-        days.push(formatToDateKey(cur));
-      }
-
-      days.forEach(dateKey => {
-        const d = parseDateKey(dateKey);
-        const dayName = t.days[d.getDay()];
-        const dayNum = d.getDate();
-        const dStats = getDateStats(dateKey);
-        const isCurToday = dateKey === todayKey;
-        const isCurSelected = dateKey === selectedDate;
-        const isCurPast = isPastDate(dateKey);
-
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.id = `date-slot-${dateKey}`;
-
-        let classes = 'relative shrink-0 w-16 sm:w-20 py-2.5 px-2 rounded-2xl flex flex-col items-center justify-between transition-all select-none ';
-        if (isCurToday) {
-          classes += isCurSelected
-            ? 'bg-gradient-to-b from-emerald-600 to-teal-700 text-white ring-3 ring-emerald-400 shadow-md scale-[1.02] '
-            : 'bg-gradient-to-b from-emerald-50 to-teal-50 dark:from-emerald-950/60 dark:to-teal-950/60 border-2 border-emerald-500 text-emerald-900 dark:text-emerald-200 ';
-        } else if (isCurSelected) {
-          classes += 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 ring-2 ring-slate-400 shadow-sm ';
-        } else {
-          classes += 'bg-slate-50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 ';
-        }
-
-        btn.className = classes;
-        btn.innerHTML = `
-          ${isCurToday ? `<span class="absolute -top-2 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase shadow-xs ${isCurSelected ? 'bg-amber-400 text-amber-950' : 'bg-emerald-600 text-white'}">${t.today}</span>` : ''}
-          <span class="text-[11px] font-medium opacity-85 truncate w-full text-center">${dayName}</span>
-          <span class="text-base sm:text-lg font-bold my-0.5">${dayNum}</span>
-          <div class="flex items-center justify-center gap-1 h-3.5 mt-0.5 w-full text-[10px]">
-            ${isCurPast ? `<span>🔒</span> ${dStats.total > 0 ? `<span class="opacity-90">${dStats.completed}/${dStats.total}</span>` : ''}` : dStats.total > 0 ? `<span>✓</span> <span class="opacity-90">${dStats.completed}/${dStats.total}</span>` : '<span class="opacity-40">-</span>'}
-          </div>
-        `;
-
-        btn.onclick = () => {
-          selectedDate = dateKey;
-          renderApp();
-          scrollToDateSlot(dateKey);
-        };
-
-        container.appendChild(btn);
-      });
-    }
-
-    function scrollToDateSlot(dateKey) {
-      setTimeout(() => {
-        const el = document.getElementById(`date-slot-${dateKey}`);
-        if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      }, 50);
-    }
-
-    // Render Habit Input Box
-    function renderHabitInputBox() {
-      const t = TRANSLATIONS[currentLang];
-      const isPast = isPastDate(selectedDate);
-      const container = document.getElementById('habit-input-container');
-
-      if (isPast) {
-        container.innerHTML = `
-          <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs flex items-center justify-center select-none text-slate-400 text-xs gap-2">
-            <span class="text-lg">🔒</span>
-            <span>${t.pastDaysLocked}</span>
-          </div>
-        `;
-        return;
-      }
-
-      const formatted = getFormattedDate(selectedDate);
-      const isFuture24h = isMoreThan24HoursAhead(selectedDate, inputTime);
-
-      container.innerHTML = `
-        <div class="bg-white dark:bg-slate-900 border-2 border-emerald-500/40 rounded-2xl p-4 sm:p-5 shadow-md space-y-4">
-          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-              <h2 class="text-sm font-bold text-slate-900 dark:text-white">
-                ${t.addHabitForDate}: ${formatted.fullDate}
-              </h2>
-            </div>
-          </div>
-
-          <form id="add-habit-form" class="space-y-3.5">
-            <!-- Autocomplete Title -->
-            <div class="relative w-full">
-              <input
-                id="habit-title-input"
-                type="text"
-                placeholder="${t.habitPlaceholder}"
-                value="${escapeHtml(inputTitle)}"
-                class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition shadow-sm text-sm"
-              />
-              <div id="autocomplete-dropdown" class="hidden absolute z-50 w-full mt-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden max-h-56 overflow-y-auto"></div>
-            </div>
-
-            <!-- Time Input -->
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-xl flex-1 sm:max-w-xs">
-                <span class="text-xs text-slate-400">🕒</span>
-                <span class="text-xs text-slate-500 whitespace-nowrap">${t.timeOptional}</span>
-                <input
-                  id="habit-time-input"
-                  type="time"
-                  value="${inputTime}"
-                  class="bg-transparent text-sm text-slate-800 dark:text-slate-100 focus:outline-none w-full font-mono cursor-pointer"
-                />
-                ${inputTime ? `<button type="button" id="clear-time-btn" class="text-slate-400 hover:text-slate-600 text-xs">✕</button>` : ''}
-              </div>
-            </div>
-
-            <!-- Recurring Habit Feature Box (ميزة عادة: برمجة المهمة كعادة متكررة) -->
-            <div class="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/30 p-3.5 space-y-3">
-              <div class="flex items-center justify-between gap-3">
-                <div class="flex items-center gap-2.5">
-                  <div class="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shrink-0 text-amber-600">
-                    🔄
-                  </div>
-                  <div>
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                      <span class="text-sm font-bold text-amber-950 dark:text-amber-100 block leading-tight">
-                        ${t.scheduleAsHabit}
-                      </span>
-                      ${isHabitPaywalled && !isProUser ? `
-                        <button type="button" onclick="openPaywallModal()" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] shadow-2xs transition cursor-pointer">
-                          <span>👑</span> <span>${t.proBadge}</span>
-                        </button>
-                      ` : ''}
-                      ${isHabitPaywalled && isProUser ? `
-                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-300">
-                          <span>✨</span> <span>${t.proUnlocked}</span>
-                        </span>
-                      ` : ''}
-                    </div>
-                    <span class="text-[11px] text-amber-800/80 dark:text-amber-300/80 block mt-0.5">
-                      ${t.habitFeatureDesc}
-                    </span>
-                  </div>
-                </div>
-
-                <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                  <input
-                    id="habit-feature-checkbox"
-                    type="checkbox"
-                    ${inputHabitEnabled ? 'checked' : ''}
-                    class="sr-only peer"
-                  />
-                  <div class="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
-                </label>
-              </div>
-
-              ${inputHabitEnabled ? `
-                <div class="pt-2.5 border-t border-amber-200/60 dark:border-amber-800/50 space-y-3 text-xs">
-                  <!-- Days of week -->
-                  <div class="space-y-1.5">
-                    <div class="flex items-center justify-between flex-wrap gap-1">
-                      <span class="font-bold text-amber-950 dark:text-amber-100">${t.repeatDays}:</span>
-                      <div class="flex items-center gap-1">
-                        <button type="button" onclick="setHabitDays([0,1,2,3,4,5,6])" class="text-[11px] px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-medium">${t.allDays}</button>
-                        <button type="button" onclick="setHabitDays([0,1,2,3,4])" class="text-[11px] px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-medium">${t.workdays}</button>
-                        <button type="button" onclick="setHabitDays([5,6])" class="text-[11px] px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-medium">${t.weekend}</button>
-                      </div>
-                    </div>
-                    <div class="grid grid-cols-7 gap-1 pt-1">
-                      ${t.days.map((dName, idx) => `
-                        <button type="button" onclick="toggleHabitDay(${idx})" class="py-1.5 px-1 rounded-lg text-center font-medium transition cursor-pointer text-[11px] ${
-                          inputHabitDays.includes(idx) ? 'bg-amber-600 text-white shadow-xs font-bold' : 'bg-white dark:bg-slate-800 text-slate-600 border border-amber-200/60'
-                        }">
-                          ${dName.slice(0, 3)}
-                        </button>
-                      `).join('')}
-                    </div>
-                  </div>
-
-                  <!-- Duration Presets -->
-                  <div class="space-y-1.5 pt-1">
-                    <span class="font-bold text-amber-950 dark:text-amber-100 block">${t.durationPeriod}:</span>
-                    <div class="flex flex-wrap items-center gap-1.5">
-                      ${[
-                        { label: t.duration1Week, val: 7 },
-                        { label: t.duration2Weeks, val: 14 },
-                        { label: t.duration21Days, val: 21 },
-                        { label: t.duration1Month, val: 30 },
-                        { label: t.duration3Months, val: 90 },
-                        { label: t.custom, val: -1 },
-                      ].map(p => `
-                        <button type="button" onclick="setDurationPreset(${p.val})" class="px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
-                          inputHabitDurationPreset === p.val ? 'bg-amber-600 text-white shadow-xs font-bold' : 'bg-white dark:bg-slate-800 text-amber-950 border border-amber-200'
-                        }">
-                          ${p.label}
-                        </button>
-                      `).join('')}
-                    </div>
-                    ${inputHabitDurationPreset === -1 ? `
-                      <div class="flex items-center gap-2 pt-1">
-                        <input id="custom-duration-input" type="number" min="1" max="365" value="${inputHabitCustomVal}" class="w-16 bg-white dark:bg-slate-800 border border-amber-300 rounded px-2 py-1 text-center font-mono text-sm" />
-                        <span class="text-xs text-amber-900">${t.daysUnit}</span>
-                      </div>
-                    ` : ''}
-                  </div>
-                </div>
-              ` : ''}
-            </div>
-
-            <!-- Reminder proposal section (only when > 24h ahead) -->
-            ${isFuture24h ? `
-              <div class="rounded-xl border border-teal-200 dark:border-teal-800/60 bg-teal-50/70 dark:bg-teal-950/30 p-3.5 space-y-3">
-                <div class="flex items-center justify-between gap-3">
-                  <div class="flex items-center gap-2">
-                    <span class="text-teal-600">🔔</span>
-                    <span class="text-sm font-bold text-teal-950 dark:text-teal-100">${t.reminderQuestion}</span>
-                  </div>
-                  <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                    <input id="reminder-checkbox" type="checkbox" ${inputReminderEnabled ? 'checked' : ''} class="sr-only peer" />
-                    <div class="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
-                  </label>
-                </div>
-
-                ${inputReminderEnabled ? `
-                  <div class="pt-2.5 border-t border-teal-200/60 dark:border-teal-800/50 space-y-2 text-xs">
-                    <div class="flex flex-wrap items-center gap-1.5">
-                      ${[
-                        { label: t.sameTime, val: 0 },
-                        { label: t.before15m, val: 15 },
-                        { label: t.before30m, val: 30 },
-                        { label: t.before1h, val: 60 },
-                        { label: t.before1d, val: 1440 },
-                        { label: t.custom, val: -1 },
-                      ].map(p => `
-                        <button type="button" onclick="setReminderOffset(${p.val})" class="px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
-                          inputReminderOffset === p.val ? 'bg-teal-600 text-white font-bold' : 'bg-white dark:bg-slate-800 text-teal-900 border border-teal-200'
-                        }">
-                          ${p.label}
-                        </button>
-                      `).join('')}
-                    </div>
-                  </div>
-                ` : ''}
-              </div>
-            ` : ''}
-
-            <!-- Submit Button -->
-            <div class="flex justify-end pt-1">
-              <button
-                type="submit"
-                class="flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow transition cursor-pointer"
-              >
-                <span>＋</span>
-                <span>${inputHabitEnabled ? t.scheduleAsHabit : t.addHabitBtn}</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      `;
-
-      // Event Listeners for Input Box
-      const titleInput = document.getElementById('habit-title-input');
-      const dropdown = document.getElementById('autocomplete-dropdown');
-
-      // Requirement: Do NOT show suggestions until first character is typed
-      titleInput.addEventListener('input', (e) => {
-        inputTitle = e.target.value;
-        const trimmed = inputTitle.trim();
-        if (trimmed.length >= 1) {
-          const norm = normalizeText(trimmed);
-          const matched = suggestions.filter(s => normalizeText(s.title).includes(norm)).slice(0, 6);
-          if (matched.length > 0) {
-            dropdown.innerHTML = matched.map((item, idx) => `
-              <div onclick="selectSuggestion('${escapeHtml(item.title)}', '${item.defaultTime || ''}')" class="px-3.5 py-2 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-between text-xs border-b border-slate-100 last:border-0">
-                <span class="font-medium text-slate-800 dark:text-slate-200">${escapeHtml(item.title)}</span>
-                ${item.defaultTime ? `<span class="text-slate-400 font-mono">🕒 ${item.defaultTime}</span>` : ''}
-              </div>
-            `).join('');
-            dropdown.classList.remove('hidden');
-          } else {
-            dropdown.classList.add('hidden');
-          }
-        } else {
-          dropdown.classList.add('hidden');
-        }
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('#habit-title-input') && !e.target.closest('#autocomplete-dropdown')) {
-          dropdown.classList.add('hidden');
-        }
-      });
-
-      const timeInput = document.getElementById('habit-time-input');
-      if (timeInput) {
-        timeInput.addEventListener('change', (e) => {
-          inputTime = e.target.value;
-          renderHabitInputBox();
-        });
-      }
-
-      const clearTimeBtn = document.getElementById('clear-time-btn');
-      if (clearTimeBtn) {
-        clearTimeBtn.addEventListener('click', () => {
-          inputTime = '';
-          renderHabitInputBox();
-        });
-      }
-
-      const habitCheckbox = document.getElementById('habit-feature-checkbox');
-      if (habitCheckbox) {
-        habitCheckbox.addEventListener('change', (e) => {
-          if (isHabitPaywalled && !isProUser) {
-            openPaywallModal();
-            habitCheckbox.checked = false;
-            return;
-          }
-          inputHabitEnabled = e.target.checked;
-          renderHabitInputBox();
-        });
-      }
-
-      const reminderCheckbox = document.getElementById('reminder-checkbox');
-      if (reminderCheckbox) {
-        reminderCheckbox.addEventListener('change', async (e) => {
-          inputReminderEnabled = e.target.checked;
-          if (inputReminderEnabled && 'Notification' in window && Notification.permission !== 'granted') {
-            await Notification.requestPermission();
-          }
-          renderHabitInputBox();
-        });
-      }
-
-      const addForm = document.getElementById('add-habit-form');
-      addForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        submitHabitForm();
-      });
-    }
-
-    window.selectSuggestion = function(title, defTime) {
-      inputTitle = title;
-      if (defTime && !inputTime) inputTime = defTime;
-      renderHabitInputBox();
-    };
-    window.setHabitDays = function(daysArr) {
-      inputHabitDays = daysArr;
-      renderHabitInputBox();
-    };
-    window.toggleHabitDay = function(dayIdx) {
-      if (inputHabitDays.includes(dayIdx)) {
-        if (inputHabitDays.length > 1) inputHabitDays = inputHabitDays.filter(d => d !== dayIdx);
-      } else {
-        inputHabitDays.push(dayIdx);
-        inputHabitDays.sort();
-      }
-      renderHabitInputBox();
-    };
-    window.setDurationPreset = function(val) {
-      inputHabitDurationPreset = val;
-      renderHabitInputBox();
-    };
-    window.setReminderOffset = function(val) {
-      inputReminderOffset = val;
-      renderHabitInputBox();
-    };
-
-    function submitHabitForm() {
-      const cleanTitle = inputTitle.trim();
-      if (!cleanTitle) return;
-
-      if (inputHabitEnabled) {
-        // Recurring series
-        const durationDays = inputHabitDurationPreset === -1 ? inputHabitCustomVal : inputHabitDurationPreset;
-        const groupId = 'grp_' + Date.now();
-        const start = parseDateKey(selectedDate);
-        const newItems = [];
-
-        for (let i = 0; i < durationDays; i++) {
-          const cur = new Date(start);
-          cur.setDate(start.getDate() + i);
-          if (inputHabitDays.length > 0 && !inputHabitDays.includes(cur.getDay())) continue;
-          const curKey = formatToDateKey(cur);
-          if (isPastDate(curKey)) continue;
-
-          newItems.push({
-            id: 'habit_' + Date.now() + '_' + i,
-            title: cleanTitle,
-            date: curKey,
-            time: inputTime || undefined,
-            completed: false,
-            createdAt: Date.now(),
+      if (isHabit) {
+        const parts = currentDate.split('-').map(Number);
+        for (let i = 0; i < 21; i++) {
+          const d = new Date(parts[0], parts[1]-1, parts[2] + i);
+          const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+          tasks.push({
+            id: Date.now() + '_' + i,
+            title,
+            time: timeInput.value,
+            date: dateStr,
             isHabit: true,
-            habitGroupId: groupId,
-            habitDurationLabel: `${durationDays} ${TRANSLATIONS[currentLang].daysUnit}`
+            completed: false
           });
         }
-
-        if (newItems.length > 0) {
-          habits.push(...newItems);
-          saveHabits();
-          recordHabitUsage(cleanTitle, inputTime);
-        }
       } else {
-        // Single Task
-        const newHabit = {
-          id: 'habit_' + Date.now(),
-          title: cleanTitle,
-          date: selectedDate,
-          time: inputTime || undefined,
-          completed: false,
-          createdAt: Date.now(),
-          reminderEnabled: Boolean(inputReminderEnabled && isMoreThan24HoursAhead(selectedDate, inputTime)),
-          reminderOffsetMinutes: inputReminderOffset
-        };
-        habits.push(newHabit);
-        saveHabits();
-        recordHabitUsage(cleanTitle, inputTime);
-      }
-
-      inputTitle = '';
-      inputTime = '';
-      inputHabitEnabled = false;
-      inputReminderEnabled = false;
-      renderApp();
-    }
-
-    // Render Habits Strip
-    function renderHabitsStrip() {
-      const t = TRANSLATIONS[currentLang];
-      const isPast = isPastDate(selectedDate);
-      const stripContainer = document.getElementById('habits-scroll-strip');
-      const dateHabits = habits
-        .filter(h => h.date === selectedDate)
-        .sort((a, b) => {
-          if (a.time && b.time) return a.time.localeCompare(b.time);
-          if (a.time && !b.time) return -1;
-          if (!a.time && b.time) return 1;
-          return a.createdAt - b.createdAt;
+        tasks.push({
+          id: Date.now() + '',
+          title,
+          time: timeInput.value,
+          date: currentDate,
+          isHabit: false,
+          completed: false
         });
+      }
 
-      document.getElementById('strip-title-count').textContent = `${t.habitsStrip} (${dateHabits.length})`;
-      const completedCount = dateHabits.filter(h => h.completed).length;
-      document.getElementById('strip-completed-count').textContent = dateHabits.length > 0 ? `✓ ${completedCount} ${t.completed}` : '';
-      
-      const lockedBadge = document.getElementById('strip-locked-badge');
-      if (isPast) lockedBadge.classList.remove('hidden');
-      else lockedBadge.classList.add('hidden');
+      input.value = '';
+      timeInput.value = '';
+      document.getElementById('isHabitCheck').checked = false;
+      document.getElementById('suggestionsList').style.display = 'none';
+      saveTasks();
+    }
 
-      if (dateHabits.length === 0) {
-        stripContainer.innerHTML = `
-          <div class="w-full bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center text-xs text-slate-400">
-            ${t.noHabits}
-          </div>
-        `;
+    function toggleTask(id) {
+      const item = tasks.find(t => t.id === id);
+      if (item) {
+        item.completed = !item.completed;
+        saveTasks();
+      }
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      saveTasks();
+    }
+
+    function render() {
+      const today = getTodayStr();
+      const isPast = currentDate < today;
+
+      const dateLabel = document.getElementById('dateLabel');
+      const todayJumpBtn = document.getElementById('todayJumpBtn');
+      dateLabel.innerText = (currentDate === today) ? `اليوم (${currentDate})` : currentDate;
+      todayJumpBtn.style.display = (currentDate === today) ? 'none' : 'inline-block';
+
+      const inputCard = document.getElementById('inputCard');
+      inputCard.style.display = isPast ? 'none' : 'block';
+
+      const dayTasks = tasks.filter(t => t.date === currentDate);
+      const completedCount = dayTasks.filter(t => t.completed).length;
+
+      document.getElementById('statsBadge').innerText = `${completedCount} / ${dayTasks.length} مكتملة`;
+
+      const list = document.getElementById('tasksList');
+      if (dayTasks.length === 0) {
+        list.innerHTML = `<div class="empty">${isPast ? 'هذا اليوم مؤرشف ومقفل للعرض فقط 🔒' : 'لا توجد مهمات مسجلة لهذا اليوم'}</div>`;
         return;
       }
 
-      stripContainer.innerHTML = dateHabits.map(habit => `
-        <div id="habit-card-${habit.id}" class="group shrink-0 w-72 sm:w-80 rounded-2xl p-4 transition-all border flex flex-col justify-between relative ${
-          habit.completed
-            ? 'bg-slate-50 dark:bg-slate-900/40 border-emerald-300 shadow-xs'
-            : 'bg-white dark:bg-slate-900 border-slate-200 shadow-sm hover:shadow-md'
-        }">
-          <div class="flex items-start gap-3">
-            <button
-              type="button"
-              ${isPast ? 'disabled' : ''}
-              onclick="toggleHabit('${habit.id}')"
-              class="mt-0.5 w-6 h-6 rounded-lg flex items-center justify-center transition-all shrink-0 ${
-                isPast ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'
-              } ${
-                habit.completed ? 'bg-emerald-600 text-white' : 'border-2 border-slate-300 hover:border-emerald-500 bg-white'
-              }"
-            >
-              ${habit.completed ? '✓' : isPast ? '🔒' : ''}
-            </button>
-            <div class="min-w-0 flex-1">
-              <h3 class="font-semibold text-sm leading-snug break-words ${
-                habit.completed ? 'text-slate-400 line-through' : 'text-slate-800 dark:text-slate-100'
-              }">
-                ${escapeHtml(habit.title)}
-              </h3>
+      list.innerHTML = dayTasks.map(t => `
+        <div class="task-item ${t.completed ? 'completed' : ''}">
+          <div class="task-left">
+            <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')" ${isPast ? 'disabled' : ''} style="cursor:pointer; width:18px; height:18px;" />
+            <div>
+              <div class="task-text" style="font-weight: 500;">${t.title}</div>
+              <div style="font-size: 0.8rem; color: #64748b;">
+                ${t.time ? `🕒 ${t.time}` : ''}
+                ${t.isHabit ? `<span class="task-tag">عادة متكررة</span>` : ''}
+              </div>
             </div>
           </div>
-
-          <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
-            <div class="flex items-center gap-1.5 flex-wrap">
-              ${habit.time ? `<span class="text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg font-mono">🕒 ${habit.time}</span>` : ''}
-              ${habit.isHabit ? `<span class="text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-[10px] font-semibold">🔄 ${habit.habitDurationLabel || 'عادة'}</span>` : ''}
-              ${habit.reminderEnabled ? `<span class="text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded text-[10px]">🔔 ${getRemainingTimeText(habit.date, habit.time)}</span>` : ''}
-            </div>
-
-            ${isPast ? `
-              <span class="p-1.5 text-slate-400 bg-slate-100 rounded-lg cursor-not-allowed">🔒</span>
-            ` : `
-              <button type="button" onclick="promptDeleteHabit('${habit.id}', '${habit.habitGroupId || ''}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer">
-                🗑️
-              </button>
-            `}
-          </div>
+          ${!isPast ? `<button class="btn-del" onclick="deleteTask('${t.id}')" title="حذف">✕</button>` : '<span>🔒</span>'}
         </div>
       `).join('');
     }
 
-    window.toggleHabit = function(id) {
-      if (isPastDate(selectedDate)) return;
-      const h = habits.find(item => item.id === id);
-      if (h) {
-        h.completed = !h.completed;
-        saveHabits();
-        renderApp();
-      }
-    };
+    // الاقتراحات الذكية: تظهر فقط بعد كتابة الحرف الأول
+    const taskInput = document.getElementById('taskInput');
+    const suggestionsList = document.getElementById('suggestionsList');
 
-    window.promptDeleteHabit = function(id, groupId) {
-      if (groupId) {
-        openDeleteModal(id, groupId);
-      } else {
-        habits = habits.filter(h => h.id !== id);
-        saveHabits();
-        renderApp();
+    taskInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (val.length >= 1) {
+        const matches = DEFAULT_SUGGESTIONS.filter(s => s.includes(val));
+        if (matches.length > 0) {
+          suggestionsList.innerHTML = matches.map(m => `
+            <div class="suggestion-item" onclick="selectSuggestion('${m}')">${m}</div>
+          `).join('');
+          suggestionsList.style.display = 'block';
+          return;
+        }
       }
-    };
+      suggestionsList.style.display = 'none';
+    });
 
-    // Render Notifications Dropdown
-    function renderNotificationsDropdown() {
-      const list = document.getElementById('notifications-list');
-      if (notifications.length === 0) {
-        list.innerHTML = `
-          <div class="py-6 text-center text-xs text-slate-400">
-            <p>لا توجد إشعارات مسجلة</p>
-          </div>
-        `;
-        return;
-      }
-
-      list.innerHTML = notifications.map(notif => `
-        <div class="rounded-xl p-3 border text-xs transition ${
-          notif.read ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-amber-50 border-amber-300 text-slate-800'
-        }">
-          <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0 flex-1">
-              <span class="font-bold text-[10px] px-1.5 py-0.5 rounded ${notif.read ? 'bg-slate-200 text-slate-600' : 'bg-amber-200 text-amber-900'}">حان موعد المهمة!</span>
-              <p class="font-bold mt-1 text-xs truncate">${escapeHtml(notif.habitTitle)}</p>
-              <p class="text-[11px] text-slate-500 mt-0.5">${notif.explanatoryMessage || getRemainingTimeText(notif.habitDate, notif.habitTime)}</p>
-            </div>
-            <div class="flex items-center gap-1">
-              ${!notif.read ? `
-                <button type="button" onclick="markNotifRead('${notif.id}')" class="px-2 py-1 bg-white border border-slate-200 rounded text-[10px] hover:bg-slate-100">تمت الرؤية</button>
-              ` : `
-                <button type="button" onclick="dismissNotif('${notif.id}')" class="text-slate-400 hover:text-rose-600 p-1">✕</button>
-              `}
-            </div>
-          </div>
-        </div>
-      `).join('');
+    function selectSuggestion(text) {
+      taskInput.value = text;
+      suggestionsList.style.display = 'none';
     }
 
-    window.markNotifRead = function(id) {
-      const n = notifications.find(item => item.id === id);
-      if (n) {
-        n.read = true;
-        saveNotifications();
-        renderApp();
-      }
-    };
-    window.dismissNotif = function(id) {
-      notifications = notifications.filter(n => n.id !== id);
-      saveNotifications();
-      renderApp();
-    };
-
-    // Modals
-    window.openPaywallModal = function() {
-      const t = TRANSLATIONS[currentLang];
-      const root = document.getElementById('modals-root');
-      root.innerHTML = `
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div class="bg-white dark:bg-slate-900 border border-amber-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
-            <button onclick="closeModal()" class="absolute top-4 end-4 text-slate-400 hover:text-slate-700 text-lg">✕</button>
-            <div class="text-center pt-2 pb-4">
-              <div class="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-2xl mx-auto mb-3 shadow-lg">👑</div>
-              <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-bold text-xs">✨ ${t.proFeature}</span>
-              <h3 class="text-xl font-black mt-2">${t.monetizationTitle}</h3>
-              <p class="text-xs text-slate-600 mt-1">${t.monetizationSubtitle}</p>
-            </div>
-
-            <div class="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-3.5 space-y-2 text-xs mb-4">
-              <div class="flex items-center gap-2"><span>✓</span> <span>برمجة المهمة وتكرارها التلقائي في عدة أيام محددة</span></div>
-              <div class="flex items-center gap-2"><span>✓</span> <span>فترات ممتدة (21 يوماً لبناء العادة، أشهر، فترات مخصصة)</span></div>
-              <div class="flex items-center gap-2"><span>✓</span> <span>إدارة وحذف السلسلة كاملة بضغطة زر واحدة</span></div>
-            </div>
-
-            <div class="space-y-2">
-              <button onclick="upgradePro('annual')" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md">${t.upgradeToProBtn} ($19.99/سنة)</button>
-              <button onclick="upgradePro('dev_test')" class="w-full py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-semibold text-xs">${t.testUnlockBtn}</button>
-              <div class="text-center pt-1">
-                <button onclick="restorePurchases()" class="text-xs text-slate-500 underline">${t.restorePurchases}</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    };
-
-    window.openConfigModal = function() {
-      const t = TRANSLATIONS[currentLang];
-      const root = document.getElementById('modals-root');
-      root.innerHTML = `
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div class="bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl relative text-slate-800">
-            <button onclick="closeModal()" class="absolute top-4 end-4 text-slate-400 hover:text-slate-700 text-lg">✕</button>
-            <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
-              <span class="text-2xl">⚙️</span>
-              <div>
-                <h3 class="font-bold text-base">${t.configTitle}</h3>
-                <p class="text-xs text-slate-500">التحكم في خاصية جعل العادة مدفوعة عند الرفع</p>
-              </div>
-            </div>
-
-            <div class="my-4 space-y-4 text-xs">
-              <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/50 space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="font-bold text-sm">${t.configToggle}</span>
-                  <input type="checkbox" id="modal-paywall-toggle" ${isHabitPaywalled ? 'checked' : ''} class="w-4 h-4 cursor-pointer" />
-                </div>
-                <p class="text-slate-600">${t.configDesc}</p>
-                <div class="pt-1 flex items-center justify-between font-bold">
-                  <span>${t.paidStatus}:</span>
-                  <span class="${isHabitPaywalled ? 'text-amber-700' : 'text-emerald-700'}">${isHabitPaywalled ? '🔒 ' + t.paid : '✅ ' + t.free}</span>
-                </div>
-              </div>
-
-              <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
-                <div>
-                  <span class="font-bold block">حالة العضوية الحالية (للاختبار)</span>
-                  <span class="text-slate-500">${isProUser ? '👑 مشترك PRO' : 'مستخدم مجاني'}</span>
-                </div>
-                <button onclick="toggleProUser()" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 font-semibold text-xs">
-                  ${isProUser ? 'تبديل لعادي' : 'تبديل لـ PRO'}
-                </button>
-              </div>
-            </div>
-
-            <button onclick="closeModal()" class="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs">إغلاق وحفظ</button>
-          </div>
-        </div>
-      `;
-
-      document.getElementById('modal-paywall-toggle').addEventListener('change', (e) => {
-        isHabitPaywalled = e.target.checked;
-        localStorage.setItem('app_habit_feature_is_paid', String(isHabitPaywalled));
-        renderApp();
-        openConfigModal();
-      });
-    };
-
-    window.openDeleteModal = function(id, groupId) {
-      const t = TRANSLATIONS[currentLang];
-      const root = document.getElementById('modals-root');
-      root.innerHTML = `
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div class="bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl max-w-sm w-full p-5 shadow-2xl relative text-xs">
-            <button onclick="closeModal()" class="absolute top-3 end-3 text-slate-400 hover:text-slate-700">✕</button>
-            <h4 class="font-bold text-sm mb-3">حذف المهمة من السلسلة</h4>
-            <div class="space-y-2">
-              <button onclick="confirmDeleteOne('${id}')" class="w-full text-start px-3 py-2 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-600 font-medium">${t.deleteOnlyThis}</button>
-              <button onclick="confirmDeleteGroup('${groupId}')" class="w-full text-start px-3 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold">${t.deleteAllSeries}</button>
-            </div>
-          </div>
-        </div>
-      `;
-    };
-
-    window.confirmDeleteOne = function(id) {
-      habits = habits.filter(h => h.id !== id);
-      saveHabits();
-      closeModal();
-      renderApp();
-    };
-
-    window.confirmDeleteGroup = function(groupId) {
-      habits = habits.filter(h => h.habitGroupId !== groupId);
-      saveHabits();
-      closeModal();
-      renderApp();
-    };
-
-    window.closeModal = function() {
-      document.getElementById('modals-root').innerHTML = '';
-    };
-
-    window.upgradePro = function(plan) {
-      isProUser = true;
-      localStorage.setItem('app_user_is_pro', 'true');
-      closeModal();
-      renderApp();
-    };
-
-    window.toggleProUser = function() {
-      isProUser = !isProUser;
-      localStorage.setItem('app_user_is_pro', String(isProUser));
-      renderApp();
-      openConfigModal();
-    };
-
-    window.restorePurchases = function() {
-      isProUser = true;
-      localStorage.setItem('app_user_is_pro', 'true');
-      closeModal();
-      renderApp();
-    };
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str).replace(/[&<>"']/g, function(m) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
-      });
-    }
-
-    // --- Global Controls Setup ---
-    document.getElementById('lang-menu-btn').onclick = () => {
-      const dd = document.getElementById('lang-dropdown');
-      dd.classList.toggle('hidden');
-      dd.innerHTML = LANGUAGES.map(l => `
-        <button type="button" onclick="changeLanguage('${l.code}')" class="w-full px-3 py-2 text-xs flex items-center justify-between hover:bg-slate-50 ${currentLang === l.code ? 'font-bold text-emerald-600' : ''}">
-          <span class="flex items-center gap-2"><span>${l.flag}</span> <span>${l.name}</span></span>
-          ${currentLang === l.code ? '✓' : ''}
-        </button>
-      `).join('');
-    };
-
-    window.changeLanguage = function(code) {
-      currentLang = code;
-      localStorage.setItem('habits_organizer_selected_lang_v1', code);
-      document.getElementById('lang-dropdown').classList.add('hidden');
-      renderApp();
-    };
-
-    document.getElementById('bell-btn').onclick = () => {
-      document.getElementById('notification-dropdown').classList.toggle('hidden');
-    };
-
-    document.getElementById('open-config-btn').onclick = () => openConfigModal();
-
-    document.getElementById('prev-day-btn').onclick = () => {
-      const d = parseDateKey(selectedDate);
-      d.setDate(d.getDate() - 1);
-      selectedDate = formatToDateKey(d);
-      renderApp();
-      scrollToDateSlot(selectedDate);
-    };
-
-    document.getElementById('next-day-btn').onclick = () => {
-      const d = parseDateKey(selectedDate);
-      d.setDate(d.getDate() + 1);
-      selectedDate = formatToDateKey(d);
-      renderApp();
-      scrollToDateSlot(selectedDate);
-    };
-
-    document.getElementById('back-today-btn').onclick = () => {
-      selectedDate = getTodayDateKey();
-      renderApp();
-      scrollToDateSlot(selectedDate);
-    };
-
-    document.getElementById('native-date-picker').onchange = (e) => {
-      if (e.target.value) {
-        selectedDate = e.target.value;
-        renderApp();
-        scrollToDateSlot(selectedDate);
-      }
-    };
-
-    document.getElementById('mark-all-read-btn').onclick = () => {
-      notifications.forEach(n => n.read = true);
-      saveNotifications();
-      renderApp();
-    };
-
-    document.getElementById('clear-all-notifs-btn').onclick = () => {
-      notifications = [];
-      saveNotifications();
-      renderApp();
-    };
-
-    document.getElementById('scroll-right-btn').onclick = () => {
-      document.getElementById('habits-scroll-strip').scrollBy({ left: 300, behavior: 'smooth' });
-    };
-    document.getElementById('scroll-left-btn').onclick = () => {
-      document.getElementById('habits-scroll-strip').scrollBy({ left: -300, behavior: 'smooth' });
-    };
-
-    // Close dropdowns on outside click
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('#lang-menu-btn') && !e.target.closest('#lang-dropdown')) {
-        document.getElementById('lang-dropdown').classList.add('hidden');
-      }
-      if (!e.target.closest('#bell-btn') && !e.target.closest('#notification-dropdown')) {
-        document.getElementById('notification-dropdown').classList.add('hidden');
+      if (!e.target.closest('.input-group')) {
+        suggestionsList.style.display = 'none';
       }
     });
 
-    // Check reminders periodically
-    setInterval(() => {
-      const now = Date.now();
-      habits.forEach(h => {
-        if (h.reminderEnabled && !h.notified && !h.completed) {
-          const target = parseDateKey(h.date);
-          if (h.time && h.time.includes(':')) {
-            const [hr, min] = h.time.split(':').map(Number);
-            target.setHours(hr, min, 0, 0);
-          } else {
-            target.setHours(9, 0, 0, 0);
-          }
-          const trigger = target.getTime() - ((h.reminderOffsetMinutes || 0) * 60000);
-          if (trigger <= now) {
-            h.notified = true;
-            h.reminderEnabled = false;
-            saveHabits();
-            notifications.unshift({
-              id: 'notif_' + Date.now(),
-              habitId: h.id,
-              habitTitle: h.title,
-              habitDate: h.date,
-              habitTime: h.time,
-              timestamp: now,
-              read: false,
-              explanatoryMessage: getRemainingTimeText(h.date, h.time)
-            });
-            saveNotifications();
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification(h.title, { body: getRemainingTimeText(h.date, h.time), icon: '/icon.jpg' });
-            }
-            renderApp();
-          }
-        }
-      });
-    }, 15000);
-
-    // Initial render
-    renderApp();
-    scrollToDateSlot(selectedDate);
+    render();
   </script>
 </body>
-</html>
+                                                            </html>
