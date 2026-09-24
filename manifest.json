@@ -1,0 +1,27 @@
+{
+  "background_color": "#ffffff",
+  "description": "Smart app to manage daily tasks and habits",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Timetodo",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Timetodo",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "https://youcefvet.github.io/icon.jpg",
+      "type": "image/jpeg",
+      "isSquare": false,
+      "isPng": false,
+      "isWebp": false,
+      "isJpg": true,
+      "width": 0,
+      "is512x512": false,
+      "is256x256": false,
+      "is192x192": false
+    }
+  ],
+  "id": "Timetodo"
+}
