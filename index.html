@@ -3,237 +3,515 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>إنجازاتي - مهامي وتنبيهاتي</title>
+  <title>إنجازاتي - تتبع المهام والعادات اليومية</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: #f8fafc; color: #0f172a; padding: 12px; display: flex; justify-content: center; }
-    .app-card { width: 100%; max-width: 480px; background: #ffffff; border-radius: 20px; padding: 18px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.07); border: 1px solid #e2e8f0; }
-    
-    /* Header */
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
-    .header h1 { font-size: 19px; font-weight: 800; color: #0f766e; }
-    .badge-counter { background: #ccfbf1; color: #0f766e; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 12px; }
-
-    /* Inputs */
-    .input-group { margin-bottom: 12px; }
-    .input-group label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; }
-    input[type="text"], input[type="date"], input[type="time"] { width: 100%; padding: 11px 14px; border: 1.5px solid #cbd5e1; border-radius: 12px; font-size: 14px; outline: none; transition: 0.2s; background: #fff; }
-    input:focus { border-color: #0d9488; }
-    .row-2 { display: flex; gap: 8px; }
-    .row-2 > div { flex: 1; }
-
-    /* Custom Reminder Box */
-    .reminder-box { background: #f0fdfa; border: 1.5px solid #99f6e4; border-radius: 14px; padding: 12px; margin-bottom: 14px; }
-    .reminder-title { font-size: 12px; font-weight: 700; color: #115e59; margin-bottom: 8px; display: flex; justify-content: space-between; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; }
-    .unit-card { background: #ffffff; border: 1px solid #ccfbf1; border-radius: 10px; padding: 6px 4px; }
-    .unit-card span { display: block; font-size: 11px; color: #64748b; margin-bottom: 3px; }
-    .unit-card input { width: 100%; text-align: center; font-weight: 800; font-size: 15px; border: none; background: transparent; outline: none; }
-
-    /* Buttons */
-    .btn-add { width: 100%; padding: 13px; background: #0d9488; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.15s; }
-    .btn-add:active { transform: scale(0.98); background: #0f766e; }
-
-    /* Tasks List */
-    .list-title { font-size: 14px; font-weight: 700; color: #334155; margin: 18px 0 10px; }
-    .tasks-container { display: flex; flex-direction: column; gap: 8px; }
-    .task-item { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 12px; gap: 10px; }
-    .task-item.completed { background: #f1f5f9; opacity: 0.7; }
-    .task-item.completed .task-text { text-decoration: line-through; color: #94a3b8; }
-    .task-right { display: flex; align-items: center; gap: 10px; flex: 1; overflow: hidden; }
-    .task-check { width: 20px; height: 20px; accent-color: #0d9488; cursor: pointer; }
-    .task-text { font-size: 14px; font-weight: 600; word-break: break-word; }
-    .task-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 3px; }
-    .tag { font-size: 10px; font-weight: 700; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 6px; }
-    .tag-rem { background: #fef3c7; color: #d97706; }
-    .btn-del { background: #fee2e2; color: #dc2626; border: none; padding: 6px 10px; font-size: 12px; font-weight: 700; border-radius: 8px; cursor: pointer; }
-    .empty-state { text-align: center; color: #94a3b8; font-size: 13px; padding: 25px 0; }
+    * { -webkit-tap-highlight-color: transparent; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col pb-20 select-none">
 
-<div class="app-card">
-  <!-- رأس الصفحة -->
-  <div class="header">
-    <h1>📋 إنجازاتي</h1>
-    <div class="badge-counter" id="statsCount">0 / 0 منجز</div>
-  </div>
-
-  <!-- إضافة مهمة -->
-  <div class="input-group">
-    <label>عنوان المهمة</label>
-    <input type="text" id="taskTitle" placeholder="مثال: مراجعة التقرير، قراءة ورد..." />
-  </div>
-
-  <div class="row-2 input-group">
-    <div>
-      <label>التاريخ</label>
-      <input type="date" id="taskDate" />
-    </div>
-    <div>
-      <label>الوقت</label>
-      <input type="time" id="taskTime" />
-    </div>
-  </div>
-
-  <!-- لوحة التنبيه المخصص -->
-  <div class="reminder-box">
-    <div class="reminder-title">
-      <span>⏱️ وقت التنبيه قبل الموعد:</span>
-      <span id="previewSummary" style="color:#0d9488;">(0 دقيقة)</span>
-    </div>
-    <div class="grid-3">
-      <div class="unit-card">
-        <span>الأيام</span>
-        <input type="number" id="remDays" min="0" max="30" value="0" oninput="updateSummary()">
+  <!-- الشريط العلوي -->
+  <header class="bg-white/90 backdrop-blur sticky top-0 z-40 border-b border-slate-200 px-4 py-3">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-xl font-black shadow-sm">✓</div>
+        <div>
+          <h1 id="ui-app-title" class="text-base font-black text-slate-900">إنجازاتي</h1>
+          <p id="ui-app-subtitle" class="text-[11px] text-slate-500 font-medium">تتبع المهام والعادات اليومية</p>
+        </div>
       </div>
-      <div class="unit-card">
-        <span>الساعات</span>
-        <input type="number" id="remHours" min="0" max="23" value="0" oninput="updateSummary()">
-      </div>
-      <div class="unit-card">
-        <span>الدقائق</span>
-        <input type="number" id="remMins" min="0" max="59" value="15" oninput="updateSummary()">
+      
+      <div class="flex items-center gap-2">
+        <!-- تبديل اللغة -->
+        <select id="lang-select" onchange="changeLang(this.value)" class="text-xs bg-slate-100 border border-slate-200 rounded-xl px-2 py-1.5 font-bold cursor-pointer outline-none">
+          <option value="ar">🇸🇦 العربية</option>
+          <option value="en">🇺🇸 English</option>
+          <option value="fr">🇫🇷 Français</option>
+          <option value="es">🇪🇸 Español</option>
+          <option value="de">🇩🇪 Deutsch</option>
+        </select>
+
+        <!-- زر الإشعارات -->
+        <button onclick="toggleNotifDropdown()" class="relative w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-base">
+          🔔
+          <span id="notif-badge" class="hidden absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] font-black rounded-full px-1.5 py-0.2">0</span>
+        </button>
       </div>
     </div>
+  </header>
+
+  <!-- مركز الإشعارات المنسدل -->
+  <div id="notif-dropdown" class="hidden fixed top-16 inset-x-4 max-w-sm mx-auto bg-white border border-slate-200 rounded-2xl p-4 shadow-2xl z-50">
+    <div class="flex items-center justify-between border-b pb-2 mb-2">
+      <span class="font-bold text-xs text-slate-800">🔔 سجل الإشعارات</span>
+      <button onclick="clearNotifs()" class="text-xs text-rose-600 hover:underline">مسح الكل</button>
+    </div>
+    <div id="notif-list" class="max-h-60 overflow-y-auto space-y-2 text-xs"></div>
   </div>
 
-  <button class="btn-add" onclick="addTask()">+ حفظ وإضافة المهمة</button>
+  <main class="max-w-4xl w-full mx-auto px-4 pt-4 space-y-4">
 
-  <!-- قائمة المهام -->
-  <div class="list-title">قائمة المهام اليومية:</div>
-  <div class="tasks-container" id="tasksList"></div>
-</div>
+    <!-- بطاقة شريط الأيام والتقويم -->
+    <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h2 id="current-day-label" class="text-base font-black text-slate-900">...</h2>
+          <span id="day-relative-badge" class="text-[11px] font-bold text-teal-600"></span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button onclick="goToToday()" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-teal-50 text-teal-700 border border-teal-200">اليوم</button>
+          <input type="date" id="calendar-picker" onchange="pickDate(this.value)" class="text-xs bg-slate-100 border border-slate-200 rounded-xl px-2 py-1 outline-none font-bold" />
+        </div>
+      </div>
 
-<script>
-  // تهيئة التاريخ لليوم تلقائياً
-  document.getElementById('taskDate').valueAsDate = new Date();
+      <!-- شريط الأيام الأفقي القابل للتمرير -->
+      <div id="days-strip" class="flex gap-2 overflow-x-auto py-3 no-scrollbar"></div>
 
-  // تحميل المهام المحفوظة محلياً
-  let tasks = JSON.parse(localStorage.getItem('my_tasks_app_data') || '[]');
+      <!-- شريط نسبة الإنجاز لليوم -->
+      <div class="pt-2 flex items-center gap-3">
+        <div class="flex-1 bg-slate-100 rounded-full h-2.5 overflow-hidden">
+          <div id="progress-bar" class="bg-teal-600 h-full rounded-full transition-all duration-300" style="width:0%"></div>
+        </div>
+        <span id="progress-text" class="text-xs font-black font-mono text-teal-700">0%</span>
+      </div>
+    </div>
 
-  function updateSummary() {
-    const d = parseInt(document.getElementById('remDays').value) || 0;
-    const h = parseInt(document.getElementById('remHours').value) || 0;
-    const m = parseInt(document.getElementById('remMins').value) || 0;
-    if (d === 0 && h === 0 && m === 0) {
-      document.getElementById('previewSummary').textContent = 'في نفس الموعد بالضبط';
-      return;
-    }
-    let parts = [];
-    if (d > 0) parts.push(d + ' يوم');
-    if (h > 0) parts.push(h + ' ساعة');
-    if (m > 0) parts.push(m + ' دقيقة');
-    document.getElementById('previewSummary').textContent = 'قبل ' + parts.join(' و ');
-  }
+    <!-- صندوق إضافة مهمة جديدة أو عادة متكررة -->
+    <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-3">
+      <!-- اقتراحات سريعة -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+        <button type="button" onclick="setQuick('صلاة الفجر في وقتها', '05:30')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-700 whitespace-nowrap">🕌 الفجر</button>
+        <button type="button" onclick="setQuick('شرب 2 لتر ماء', '09:00')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-700 whitespace-nowrap">💧 شرب ماء</button>
+        <button type="button" onclick="setQuick('قراءة ورد القرآن أو كتاب', '20:00')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-700 whitespace-nowrap">📖 قراءة</button>
+        <button type="button" onclick="setQuick('تمارين رياضية صباحية', '07:00')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-700 whitespace-nowrap">🏃 رياضة</button>
+      </div>
 
-  function renderTasks() {
-    localStorage.setItem('my_tasks_app_data', JSON.stringify(tasks));
-    const container = document.getElementById('tasksList');
-    container.innerHTML = '';
+      <div class="flex flex-col sm:flex-row gap-2">
+        <input type="text" id="task-title-input" placeholder="ما هي مهمتك أو عادتك القادمة؟" class="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium outline-none focus:border-teal-600" />
+        <input type="time" id="task-time-input" class="w-full sm:w-36 px-3 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none" />
+      </div>
 
-    const completedCount = tasks.filter(t => t.completed).length;
-    document.getElementById('statsCount').textContent = `${completedCount} / ${tasks.length} منجز`;
-
-    if (tasks.length === 0) {
-      container.innerHTML = '<div class="empty-state">لا توجد مهام حالياً. أضف مهمتك الأولى بالأعلى!</div>';
-      return;
-    }
-
-    tasks.forEach((task, index) => {
-      let remText = '';
-      if (task.remDays > 0 || task.remHours > 0 || task.remMins > 0) {
-        let p = [];
-        if (task.remDays > 0) p.push(task.remDays + 'ي');
-        if (task.remHours > 0) p.push(task.remHours + 'س');
-        if (task.remMins > 0) p.push(task.remMins + 'د');
-        remText = 'قبل ' + p.join(' ');
-      }
-
-      const item = document.createElement('div');
-      item.className = 'task-item ' + (task.completed ? 'completed' : '');
-      item.innerHTML = `
-        <div class="task-right">
-          <input type="checkbox" class="task-check" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})">
-          <div>
-            <div class="task-text">${task.title}</div>
-            <div class="task-tags">
-              ${task.date ? `<span class="tag">📅 ${task.date}</span>` : ''}
-              ${task.time ? `<span class="tag">🕒 ${task.time}</span>` : ''}
-              ${remText ? `<span class="tag tag-rem">🔔 ${remText}</span>` : ''}
-            </div>
+      <!-- خيارات التنبيه المخصص (أيام، ساعات، دقائق) -->
+      <div class="bg-teal-50/70 border border-teal-200 rounded-2xl p-3 space-y-2">
+        <div class="flex items-center justify-between text-xs font-bold text-teal-900">
+          <span>⏱️ وقت التنبيه قبل الموعد:</span>
+          <span id="custom-offset-preview" class="font-mono text-teal-700">(0 دقيقة)</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="bg-white p-2 rounded-xl border border-teal-200">
+            <span class="text-slate-500 block mb-1">أيام</span>
+            <input type="number" id="rem-days" min="0" max="30" value="0" oninput="updateOffsetPreview()" class="w-full text-center font-bold text-sm outline-none">
+          </div>
+          <div class="bg-white p-2 rounded-xl border border-teal-200">
+            <span class="text-slate-500 block mb-1">ساعات</span>
+            <input type="number" id="rem-hours" min="0" max="23" value="0" oninput="updateOffsetPreview()" class="w-full text-center font-bold text-sm outline-none">
+          </div>
+          <div class="bg-white p-2 rounded-xl border border-teal-200">
+            <span class="text-slate-500 block mb-1">دقائق</span>
+            <input type="number" id="rem-mins" min="0" max="59" value="15" oninput="updateOffsetPreview()" class="w-full text-center font-bold text-sm outline-none">
           </div>
         </div>
-        <button class="btn-del" onclick="deleteTask(${index})">حذف</button>
-      `;
-      container.appendChild(item);
-    });
-  }
+      </div>
 
-  function addTask() {
-    const titleInput = document.getElementById('taskTitle');
-    const title = titleInput.value.trim();
-    if (!title) {
-      alert('يرجى كتابة عنوان المهمة أولاً');
-      return;
-    }
+      <!-- ميزة برمجة المهمة كعادة متكررة مجانية بالكامل -->
+      <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-3 space-y-2.5">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="habit-checkbox" onchange="toggleHabitOptions(this.checked)" class="w-4 h-4 accent-amber-600 rounded">
+          <span class="text-xs font-bold text-amber-900">برمجة المهمة كعادة متكررة (21 يوماً / أيام محددة) ✨</span>
+        </label>
 
-    const newTask = {
-      id: Date.now(),
-      title: title,
-      date: document.getElementById('taskDate').value,
-      time: document.getElementById('taskTime').value,
-      remDays: parseInt(document.getElementById('remDays').value) || 0,
-      remHours: parseInt(document.getElementById('remHours').value) || 0,
-      remMins: parseInt(document.getElementById('remMins').value) || 0,
-      completed: false
+        <div id="habit-extra-options" class="hidden space-y-2 pt-1 border-t border-amber-200/60">
+          <!-- اختيار أيام الأسبوع -->
+          <div class="flex items-center justify-between gap-1 text-[11px] font-bold">
+            <button type="button" onclick="setAllDays()" class="text-amber-800 underline">كل الأيام</button>
+            <div id="days-of-week-btns" class="flex gap-1"></div>
+          </div>
+          <!-- مدة بناء العادة -->
+          <div class="flex gap-1.5 text-xs">
+            <button type="button" onclick="setDuration(21)" class="flex-1 py-1.5 rounded-xl bg-amber-500 text-white font-bold">🎯 21 يوماً</button>
+            <button type="button" onclick="setDuration(30)" class="flex-1 py-1.5 rounded-xl bg-white border border-amber-300 text-amber-900 font-bold">شهر</button>
+            <button type="button" onclick="setDuration(60)" class="flex-1 py-1.5 rounded-xl bg-white border border-amber-300 text-amber-900 font-bold">شهرين</button>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="addTask()" class="w-full py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 active:scale-98 text-white font-bold text-sm shadow-md transition">+ حفظ وإضافة المهمة</button>
+    </div>
+
+    <!-- شريط بطاقات المهام لليوم المحدد -->
+    <div>
+      <div class="flex items-center justify-between mb-2 px-1">
+        <h3 id="tasks-count-title" class="text-xs font-bold text-slate-700">قائمة المهام (0)</h3>
+        <span id="tasks-done-title" class="text-xs font-bold text-teal-600">0 مكتملة</span>
+      </div>
+      <div id="tasks-list" class="space-y-2.5"></div>
+    </div>
+  </main>
+
+  <!-- شريط الإحصائيات السفلي العائم -->
+  <div class="fixed bottom-3 inset-x-4 max-w-sm mx-auto bg-white/95 backdrop-blur border border-teal-300 rounded-2xl py-2.5 px-4 shadow-xl flex items-center justify-between z-30">
+    <div class="flex items-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse"></span>
+      <span class="text-xs font-bold text-slate-700">المهام المنجزة لليوم:</span>
+    </div>
+    <span id="bottom-counter" class="text-sm font-black font-mono text-teal-700">0 / 0</span>
+  </div>
+
+  <!-- نافذة تأكيد الحذف (مهمة اليوم فقط أم كامل السلسلة) -->
+  <div id="delete-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-xs w-full space-y-3 shadow-2xl text-center">
+      <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl mx-auto">🗑️</div>
+      <h4 class="font-bold text-sm text-slate-900">خيارات حذف العادة المتكررة</h4>
+      <p class="text-xs text-slate-500">هل تود حذف هذه المهمة لهذا اليوم فقط أم حذف السلسلة بالكامل؟</p>
+      <div class="space-y-2 pt-2">
+        <button id="del-single-btn" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs">حذف اليوم المحدد فقط</button>
+        <button id="del-series-btn" class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs">حذف كامل السلسلة المتكررة</button>
+        <button onclick="closeDeleteModal()" class="w-full py-1.5 text-xs text-slate-400">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- قواميس اللغات ---
+    const I18N = {
+      ar: { days: ['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'], today: 'اليوم', yesterday: 'أمس', tomorrow: 'غداً', completed: 'مكتملة', empty: 'لا توجد مهام مجدولة لهذا اليوم.' },
+      en: { days: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], today: 'Today', yesterday: 'Yesterday', tomorrow: 'Tomorrow', completed: 'Completed', empty: 'No tasks scheduled for this day.' },
+      fr: { days: ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'], today: "Aujourd'hui", yesterday: 'Hier', tomorrow: 'Demain', completed: 'Terminé', empty: 'Aucune tâche prévue ce jour.' },
+      es: { days: ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'], today: 'Hoy', yesterday: 'Ayer', tomorrow: 'Mañana', completed: 'Completado', empty: 'No hay tareas programadas para este día.' },
+      de: { days: ['So','Mo','Di','Mi','Do','Fr','Sa'], today: 'Heute', yesterday: 'Gestern', tomorrow: 'Morgen', completed: 'Erledigt', empty: 'Keine Aufgaben für diesen Tag geplant.' }
     };
+    let currentLang = 'ar';
 
-    tasks.unshift(newTask);
-    titleInput.value = '';
-    renderTasks();
-  }
+    // --- حالة التطبيق ---
+    let selectedDate = getTodayKey();
+    let selectedHabitDays = [0,1,2,3,4,5,6];
+    let selectedDuration = 21;
+    let tasks = JSON.parse(localStorage.getItem('all_my_tasks_v3') || '[]');
+    let notifications = JSON.parse(localStorage.getItem('my_tasks_notifs_v3') || '[]');
 
-  function toggleTask(index) {
-    tasks[index].completed = !tasks[index].completed;
-    renderTasks();
-  }
-
-  function deleteTask(index) {
-    if (confirm('هل تريد حذف هذه المهمة؟')) {
-      tasks.splice(index, 1);
-      renderTasks();
+    function getTodayKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     }
-  }
 
-  // طلب إذن الإشعارات والتنبيه التلقائي
-  if ('Notification' in window && Notification.permission !== 'granted') {
-    Notification.requestPermission();
-  }
+    // --- توليد المؤثرات الصوتية برمجياً عبر Web Audio API ---
+    function playBeep(type) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        if (type === 'done') {
+          osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+          osc.start(); osc.stop(ctx.currentTime + 0.25);
+        } else {
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+          osc.start(); osc.stop(ctx.currentTime + 0.15);
+        }
+      } catch(e) {}
+    }
 
-  setInterval(() => {
-    const now = new Date().getTime();
-    tasks.forEach(t => {
-      if (!t.completed && !t.notified && t.date && t.time) {
-        const due = new Date(`${t.date}T${t.time}`).getTime();
-        const offsetMs = ((t.remDays * 1440) + (t.remHours * 60) + t.remMins) * 60000;
-        const triggerTime = due - offsetMs;
-        if (now >= triggerTime && (now - triggerTime) < 60000) {
-          t.notified = true;
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('⏰ موعد المهمة: ' + t.title, { body: `الموعد: ${t.time}` });
+    // --- إدارة الأيام وشريط التمرير ---
+    function renderDaysStrip() {
+      const strip = document.getElementById('days-strip');
+      strip.innerHTML = '';
+      const base = new Date();
+      base.setDate(base.getDate() - 5); // 5 أيام ماضية + 25 يوم قادم
+
+      for (let i = 0; i < 30; i++) {
+        const d = new Date(base);
+        d.setDate(base.getDate() + i);
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const isSelected = key === selectedDate;
+        const isToday = key === getTodayKey();
+
+        const btn = document.createElement('button');
+        btn.onclick = () => { selectedDate = key; renderAll(); };
+        btn.className = `shrink-0 w-12 py-2.5 rounded-2xl flex flex-col items-center justify-center transition ${
+          isSelected ? 'bg-teal-600 text-white font-black shadow-md scale-105' : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/80 font-bold'
+        }`;
+        btn.innerHTML = `
+          <span class="text-[10px] opacity-75">${I18N[currentLang].days[d.getDay()]}</span>
+          <span class="text-sm font-black">${d.getDate()}</span>
+          ${isToday ? `<span class="w-1.5 h-1.5 rounded-full ${isSelected?'bg-white':'bg-teal-500'} mt-0.5"></span>` : ''}
+        `;
+        strip.appendChild(btn);
+      }
+
+      // ضبط شارة اليوم
+      const diff = Math.round((new Date(selectedDate) - new Date(getTodayKey())) / (1000*60*60*24));
+      const relLabel = diff === 0 ? I18N[currentLang].today : (diff === -1 ? I18N[currentLang].yesterday : (diff === 1 ? I18N[currentLang].tomorrow : ''));
+      document.getElementById('current-day-label').textContent = selectedDate;
+      document.getElementById('day-relative-badge').textContent = relLabel ? `(${relLabel})` : '';
+      document.getElementById('calendar-picker').value = selectedDate;
+    }
+
+    function updateOffsetPreview() {
+      const d = parseInt(document.getElementById('rem-days').value) || 0;
+      const h = parseInt(document.getElementById('rem-hours').value) || 0;
+      const m = parseInt(document.getElementById('rem-mins').value) || 0;
+      let text = '';
+      if (d === 0 && h === 0 && m === 0) text = 'عند موعد المهمة (0د)';
+      else {
+        let parts = [];
+        if (d > 0) parts.push(d + 'ي');
+        if (h > 0) parts.push(h + 'س');
+        if (m > 0) parts.push(m + 'د');
+        text = 'قبل ' + parts.join(' ');
+      }
+      document.getElementById('custom-offset-preview').textContent = text;
+    }
+
+    function toggleHabitOptions(show) {
+      document.getElementById('habit-extra-options').classList.toggle('hidden', !show);
+      renderWeekDayButtons();
+    }
+
+    function renderWeekDayButtons() {
+      const container = document.getElementById('days-of-week-btns');
+      container.innerHTML = '';
+      I18N[currentLang].days.forEach((dayName, idx) => {
+        const isAct = selectedHabitDays.includes(idx);
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = dayName[0];
+        b.className = `w-6 h-6 rounded-lg text-xs font-bold ${isAct ? 'bg-amber-600 text-white' : 'bg-white border border-amber-300 text-amber-900'}`;
+        b.onclick = () => {
+          if (selectedHabitDays.includes(idx)) {
+            if (selectedHabitDays.length > 1) selectedHabitDays = selectedHabitDays.filter(x => x !== idx);
           } else {
-            alert('⏰ تنبيه لمهمتك: ' + t.title);
+            selectedHabitDays.push(idx);
           }
-          renderTasks();
+          renderWeekDayButtons();
+        };
+        container.appendChild(b);
+      });
+    }
+
+    function setAllDays() {
+      selectedHabitDays = [0,1,2,3,4,5,6];
+      renderWeekDayButtons();
+    }
+
+    function setDuration(days) {
+      selectedDuration = days;
+      alert('تم ضبط مدة العادة على: ' + days + ' يوماً');
+    }
+
+    function setQuick(title, time) {
+      document.getElementById('task-title-input').value = title;
+      if (time) document.getElementById('task-time-input').value = time;
+    }
+
+    // --- حفظ وإضافة المهمة / العادة ---
+    function addTask() {
+      const titleInput = document.getElementById('task-title-input');
+      const title = titleInput.value.trim();
+      if (!title) return;
+
+      const time = document.getElementById('task-time-input').value || '';
+      const remDays = parseInt(document.getElementById('rem-days').value) || 0;
+      const remHours = parseInt(document.getElementById('rem-hours').value) || 0;
+      const remMins = parseInt(document.getElementById('rem-mins').value) || 0;
+      const isHabit = document.getElementById('habit-checkbox').checked;
+
+      if (isHabit) {
+        const groupId = 'grp_' + Date.now();
+        const start = new Date(selectedDate);
+        for (let i = 0; i < selectedDuration; i++) {
+          const cur = new Date(start);
+          cur.setDate(start.getDate() + i);
+          if (!selectedHabitDays.includes(cur.getDay())) continue;
+          const k = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+          tasks.push({
+            id: 't_' + Date.now() + '_' + i,
+            groupId: groupId,
+            title: title,
+            date: k,
+            time: time,
+            remDays: remDays,
+            remHours: remHours,
+            remMins: remMins,
+            completed: false
+          });
+        }
+      } else {
+        tasks.push({
+          id: 't_' + Date.now(),
+          title: title,
+          date: selectedDate,
+          time: time,
+          remDays: remDays,
+          remHours: remHours,
+          remMins: remMins,
+          completed: false
+        });
+      }
+
+      titleInput.value = '';
+      playBeep('add');
+      saveAndRender();
+    }
+
+    function toggleTask(id) {
+      const t = tasks.find(x => x.id === id);
+      if (t) {
+        t.completed = !t.completed;
+        if (t.completed) playBeep('done');
+        saveAndRender();
+      }
+    }
+
+    let deleteTargetId = null;
+    let deleteTargetGroup = null;
+
+    function promptDelete(id, groupId) {
+      deleteTargetId = id;
+      deleteTargetGroup = groupId;
+      if (groupId) {
+        document.getElementById('delete-modal').classList.remove('hidden');
+        document.getElementById('del-single-btn').onclick = () => {
+          tasks = tasks.filter(x => x.id !== deleteTargetId);
+          closeDeleteModal();
+          saveAndRender();
+        };
+        document.getElementById('del-series-btn').onclick = () => {
+          tasks = tasks.filter(x => x.groupId !== deleteTargetGroup);
+          closeDeleteModal();
+          saveAndRender();
+        };
+      } else {
+        if (confirm('هل أنت متأكد من حذف هذه المهمة؟')) {
+          tasks = tasks.filter(x => x.id !== id);
+          saveAndRender();
         }
       }
-    });
-  }, 10000);
+    }
 
-  updateSummary();
-  renderTasks();
-</script>
+    function closeDeleteModal() {
+      document.getElementById('delete-modal').classList.add('hidden');
+    }
 
+    function renderTasks() {
+      const container = document.getElementById('tasks-list');
+      container.innerHTML = '';
+      const dayTasks = tasks.filter(x => x.date === selectedDate);
+      const doneCount = dayTasks.filter(x => x.completed).length;
+
+      document.getElementById('tasks-count-title').textContent = `قائمة المهام (${dayTasks.length})`;
+      document.getElementById('tasks-done-title').textContent = `${doneCount} ${I18N[currentLang].completed}`;
+
+      // تقدم اليوم
+      const pct = dayTasks.length === 0 ? 0 : Math.round((doneCount / dayTasks.length) * 100);
+      document.getElementById('progress-bar').style.width = pct + '%';
+      document.getElementById('progress-text').textContent = pct + '%';
+
+      // الإحصائيات لليوم الفعلي في الأسفل
+      const todayTasks = tasks.filter(x => x.date === getTodayKey());
+      const todayDone = todayTasks.filter(x => x.completed).length;
+      document.getElementById('bottom-counter').textContent = `${todayDone} / ${todayTasks.length}`;
+
+      if (dayTasks.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400 border-2 border-dashed border-slate-200 rounded-3xl">${I18N[currentLang].empty}</div>`;
+        return;
+      }
+
+      dayTasks.forEach(task => {
+        let remText = '';
+        if (task.remDays > 0 || task.remHours > 0 || task.remMins > 0) {
+          let p = [];
+          if (task.remDays > 0) p.push(task.remDays + 'ي');
+          if (task.remHours > 0) p.push(task.remHours + 'س');
+          if (task.remMins > 0) p.push(task.remMins + 'د');
+          remText = '🔔 قبل ' + p.join(' ');
+        }
+
+        const card = document.createElement('div');
+        card.className = `p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${
+          task.completed ? 'bg-emerald-50/60 border-emerald-200 opacity-80' : 'bg-white border-slate-200 shadow-xs'
+        }`;
+        card.innerHTML = `
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')" class="w-5 h-5 accent-teal-600 rounded-lg cursor-pointer">
+            <div class="min-w-0 flex-1">
+              <span class="text-sm font-bold block truncate ${task.completed ? 'line-through text-slate-400' : 'text-slate-800'}">${task.title}</span>
+              <div class="flex items-center gap-1.5 flex-wrap mt-0.5 text-[11px] font-bold">
+                ${task.time ? `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">🕒 ${task.time}</span>` : ''}
+                ${remText ? `<span class="px-2 py-0.5 rounded-md bg-teal-100 text-teal-800">${remText}</span>` : ''}
+                ${task.groupId ? `<span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">🔁 عادة</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <button onclick="promptDelete('${task.id}', '${task.groupId || ''}')" class="p-1.5 text-slate-400 hover:text-rose-600 text-xs">🗑️</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function saveAndRender() {
+      localStorage.setItem('all_my_tasks_v3', JSON.stringify(tasks));
+      localStorage.setItem('my_tasks_notifs_v3', JSON.stringify(notifications));
+      renderDaysStrip();
+      renderTasks();
+    }
+
+    function renderAll() {
+      renderDaysStrip();
+      renderTasks();
+      updateOffsetPreview();
+    }
+
+    function goToToday() { selectedDate = getTodayKey(); renderAll(); }
+    function pickDate(val) { if(val) { selectedDate = val; renderAll(); } }
+    function changeLang(lang) { currentLang = lang; document.dir = lang === 'ar' ? 'rtl' : 'ltr'; renderAll(); }
+
+    function toggleNotifDropdown() {
+      document.getElementById('notif-dropdown').classList.toggle('hidden');
+      renderNotifs();
+    }
+    function renderNotifs() {
+      const list = document.getElementById('notif-list');
+      list.innerHTML = notifications.length === 0 ? '<div class="text-center py-4 text-slate-400">لا توجد تنبيهات جديدة</div>' : '';
+      notifications.forEach(n => {
+        list.innerHTML += `<div class="p-2 rounded-xl bg-slate-50 border border-slate-200"><strong>${n.title}</strong><div class="text-[10px] text-slate-500">${n.time}</div></div>`;
+      });
+      document.getElementById('notif-badge').classList.toggle('hidden', notifications.length === 0);
+      document.getElementById('notif-badge').textContent = notifications.length;
+    }
+    function clearNotifs() { notifications = []; saveAndRender(); renderNotifs(); }
+
+    // فحص الإشعارات الدورية كل 10 ثوانٍ
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+    setInterval(() => {
+      const now = new Date();
+      const curTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      const todayKey = getTodayKey();
+      tasks.forEach(t => {
+        if (!t.completed && !t.notified && t.date === todayKey && t.time === curTime) {
+          t.notified = true;
+          notifications.unshift({ title: t.title, time: curTime });
+          playBeep('alert');
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('⏰ تذكير بمهمتك: ' + t.title);
+          }
+          saveAndRender();
+        }
+      });
+    }, 10000);
+
+    renderAll();
+  </script>
 </body>
 </html>
