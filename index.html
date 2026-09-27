@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0d9488">
-  <title>منظّم المهمات اليومية - إنجازاتي</title>
+  <title>Timetodo - منظّم المهمات اليومية والعادات</title>
   <meta name="description" content="تطبيق لتنظيم المهمات اليومية مع شريط قابل للتمرير، وخاصية التذكير والإشعارات ودعم اللغات وبرمجة العادات.">
-  <meta property="og:title" content="منظّم المهمات اليومية - إنجازاتي">
+  <meta property="og:title" content="Timetodo - منظّم المهمات اليومية والعادات">
   <meta property="og:description" content="تطبيق لتنظيم المهمات اليومية مع شريط قابل للتمرير، وخاصية التذكير والإشعارات ودعم اللغات وبرمجة العادات.">
 
-  <!-- خطوط Google Fonts: Cairo للعربية و Inter للإنجليزية -->
+  <!-- خطوط Google Fonts: Cairo للعربية، Inter للإنجليزية، و Plus Jakarta Sans لشعار Timetodo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
 
   <!-- مكتبة FontAwesome 6 (CDN مباشر وحي) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -51,7 +51,7 @@
 
   <style>
     * {
-      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+      font-family: 'Cairo', 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
@@ -78,13 +78,6 @@
     .custom-shadow {
       box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.08), 0 8px 10px -6px rgba(13, 148, 136, 0.04);
     }
-    @keyframes pulse-subtle {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-    .animate-pulse-subtle {
-      animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col pb-12 antialiased">
@@ -92,41 +85,30 @@
   <!-- ==================== 1. الشريط العلوي التجاوبي ==================== -->
   <header class="bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/90 shadow-xs">
     <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-      <!-- الشعار واسم التطبيق مع أيقونة FontAwesome -->
-      <div class="flex items-center gap-2.5">
-        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-700 to-teal-500 text-white flex items-center justify-center shadow-md shadow-teal-600/25 shrink-0">
-          <i class="fa-solid fa-list-check text-lg"></i>
-        </div>
-        <div>
-          <h1 id="ui-title" class="text-base sm:text-lg font-black text-slate-800 leading-tight">إنجازاتي</h1>
-          <p id="ui-subtitle" class="text-[11px] font-semibold text-slate-500 hidden sm:block">تتبع المهام والعادات اليومية</p>
-        </div>
+      <!-- اسم التطبيق Timetodo بخط أنيق وعصري ومضبوط الاتجاه دائماً -->
+      <div class="flex items-center select-none py-0.5" dir="ltr" style="direction: ltr !important; unicode-bidi: isolate;">
+        <span class="text-2xl sm:text-[26px] font-black tracking-tight leading-none text-slate-900" style="font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; letter-spacing: -0.02em;">
+          Timetodo
+        </span>
       </div>
 
-      <!-- أدوات التحكم: تفعيل الإشعارات، اختيار اللغة، وسجل الإشعارات -->
+      <!-- أدوات التحكم: اختيار اللغة وسجل الإشعارات الموحد -->
       <div class="flex items-center gap-1.5 sm:gap-2">
-        <!-- زر تفعيل تنبيهات المتصفح -->
-        <button type="button" id="btn-request-notif" onclick="window.requestNotificationPermission()" class="h-9 px-2 sm:px-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold flex items-center gap-1.5 transition active:scale-95 cursor-pointer" title="تفعيل إشعارات المتصفح">
-          <i id="notif-perm-icon" class="fa-solid fa-bell text-xs text-amber-600"></i>
-          <span id="notif-perm-text" class="hidden sm:inline">الإشعارات</span>
-        </button>
-
-        <!-- اختيار اللغة -->
-        <div class="relative">
-          <select id="lang-select" onchange="window.changeLanguage(this.value)" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl px-2 sm:px-2.5 py-2 outline-none cursor-pointer pr-6 pl-2 appearance-none">
-            <option value="ar">🇸🇦 العربية</option>
-            <option value="en">🇬🇧 English</option>
-            <option value="fr">🇫🇷 Français</option>
-            <option value="es">🇪🇸 Español</option>
-            <option value="de">🇩🇪 Deutsch</option>
+        <!-- زر واختيار اللغة المحسّن والأنيق -->
+        <div class="relative h-9 flex items-center bg-slate-100 hover:bg-slate-200 border border-slate-200/90 rounded-xl px-2.5 transition active:scale-98 shadow-2xs group focus-within:ring-2 focus-within:ring-teal-500/25">
+          <i class="fa-solid fa-globe text-teal-600 text-xs shrink-0 pointer-events-none me-1.5 transition-transform group-hover:rotate-12"></i>
+          <select id="lang-select" onchange="window.changeLanguage(this.value)" class="h-full text-xs font-bold text-slate-700 bg-transparent outline-none cursor-pointer pe-4 appearance-none focus:outline-none">
+            <option value="ar">العربية 🇸🇦</option>
+            <option value="en">English 🇬🇧</option>
+            <option value="zh">中文 🇨🇳</option>
+            <option value="fr">Français 🇫🇷</option>
+            <option value="es">Español 🇪🇸</option>
           </select>
-          <div class="absolute left-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
+          <i class="fa-solid fa-chevron-down text-[9px] text-slate-400 pointer-events-none absolute end-2 top-1/2 -translate-y-1/2 transition-transform group-focus-within:rotate-180"></i>
         </div>
 
-        <!-- زر فتح سجل الإشعارات -->
-        <button type="button" onclick="window.toggleNotificationsMenu()" class="relative w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 flex items-center justify-center transition active:scale-95 cursor-pointer" title="سجل التنبيهات">
+        <!-- زر الإشعارات الموحد مع شارة التنبيهات غير المقروءة -->
+        <button type="button" id="btn-notif-history" onclick="window.toggleNotificationsMenu()" class="relative w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 flex items-center justify-center transition active:scale-95 cursor-pointer" title="سجل التنبيهات">
           <i class="fa-regular fa-bell text-sm"></i>
           <span id="notif-badge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-black rounded-full min-w-4 h-4 px-1 flex items-center justify-center ring-2 ring-white">0</span>
         </button>
@@ -142,11 +124,22 @@
         <span id="ui-notif-title">سجل التنبيهات والإشعارات</span>
       </span>
       <div class="flex items-center gap-2">
-        <button type="button" onclick="window.clearNotifications()" class="text-[11px] text-rose-600 hover:text-rose-700 font-bold cursor-pointer">مسح الكل</button>
+        <button type="button" id="ui-clear-notifs" onclick="window.clearNotifications()" class="text-[11px] text-rose-600 hover:text-rose-700 font-bold cursor-pointer">مسح الكل</button>
         <button type="button" onclick="window.toggleNotificationsMenu()" class="text-slate-400 hover:text-slate-600 cursor-pointer p-1">
           <i class="fa-solid fa-xmark text-sm"></i>
         </button>
       </div>
+    </div>
+
+    <!-- شريط تفعيل إشعارات المتصفح داخل القائمة -->
+    <div id="notif-perm-banner" class="mb-2.5 p-2.5 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-2 text-xs">
+      <div class="flex items-center gap-2 min-w-0">
+        <i class="fa-solid fa-bell text-amber-600 text-xs shrink-0"></i>
+        <span id="notif-banner-text" class="font-bold text-amber-900 truncate">تفعيل إشعارات المتصفح</span>
+      </div>
+      <button type="button" id="btn-request-notif" onclick="window.requestNotificationPermission()" class="px-2.5 py-1 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-[11px] shrink-0 transition active:scale-95 cursor-pointer shadow-xs">
+        <span id="notif-banner-btn-text">تفعيل</span>
+      </button>
     </div>
     <div id="notif-list" class="max-h-64 overflow-y-auto space-y-2 text-xs">
       <!-- يتم تعبئة الإشعارات عبر JS -->
@@ -171,9 +164,9 @@
         </div>
 
         <!-- زر التقويم لاختيار أي يوم -->
-        <label class="btn-touch px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition active:scale-95">
+        <label id="ui-other-date-btn" class="btn-touch px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition active:scale-95">
           <i class="fa-regular fa-calendar text-teal-600"></i>
-          <span class="hidden sm:inline">تاريخ آخر</span>
+          <span id="ui-other-date-text" class="hidden sm:inline">تاريخ آخر</span>
           <input type="date" id="native-calendar-input" onchange="window.onDatePicked(this.value)" class="sr-only" />
         </label>
       </div>
@@ -189,49 +182,27 @@
       
       <!-- حقل إدخال عنوان المهمة -->
       <div>
-        <label for="task-title-input" class="text-xs font-bold text-slate-600 mb-1.5 block">ما الذي تريد إنجازه في هذا اليوم؟</label>
+        <label for="task-title-input" id="ui-task-input-label" class="text-xs font-bold text-slate-600 mb-1.5 block">ما الذي تريد إنجازه في هذا اليوم؟</label>
         <div class="relative">
           <input 
             type="text" 
             id="task-title-input" 
-            placeholder="اكتب مهمتك هنا (مثال: صلاة العصر، مراجعة درس، قراءة ورد...)" 
+            placeholder="اكتب مهمتك هنا..." 
             onkeydown="if(event.key==='Enter') window.submitNewTask()"
-            class="w-full h-12 pr-11 pl-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 placeholder:text-slate-400 outline-none focus:border-teal-600 focus:bg-white transition"
+            class="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 placeholder:text-slate-400 outline-none focus:border-teal-600 focus:bg-white transition"
           />
-          <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-teal-600 pointer-events-none">
-            <i class="fa-solid fa-pen-to-square text-base"></i>
-          </div>
-        </div>
-      </div>
-
-      <!-- اقتراحات سريعة شائعة -->
-      <div class="space-y-1.5">
-        <span id="ui-suggestions-title" class="text-[11px] font-bold text-slate-400 block">اقتراحات سريعة:</span>
-        <div class="flex flex-wrap gap-1.5 text-xs">
-          <button type="button" onclick="window.applySuggestion('صلاة الفجر وقراءة أذكار الصباح', '05:30')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-600 font-bold border border-slate-200/80 transition cursor-pointer">
-            🕌 صلاة الفجر
-          </button>
-          <button type="button" onclick="window.applySuggestion('تمارين رياضية صباحية (كارديو)', '07:00')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-600 font-bold border border-slate-200/80 transition cursor-pointer">
-            🏃 رياضة صباحية
-          </button>
-          <button type="button" onclick="window.applySuggestion('شرب 2 لتر من الماء خلال اليوم', '09:00')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-600 font-bold border border-slate-200/80 transition cursor-pointer">
-            💧 شرب ماء
-          </button>
-          <button type="button" onclick="window.applySuggestion('قراءة ورد القرآن أو 20 صفحة من كتاب', '20:00')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-600 font-bold border border-slate-200/80 transition cursor-pointer">
-            📖 قراءة كتاب
-          </button>
         </div>
       </div>
 
       <!-- اختيار وقت المهمة -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-slate-100">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
+          <div class="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0">
             <i class="fa-regular fa-clock text-sm"></i>
           </div>
           <div>
-            <span class="text-xs font-bold text-slate-800 block">وقت المهمة المحدد</span>
-            <span class="text-[11px] text-slate-500 font-medium">سيتم التنبيه تلقائياً عند حلول هذا الموعد</span>
+            <span id="ui-task-time-title" class="text-xs font-bold text-slate-800 block">وقت المهمة المحدد</span>
+            <span id="ui-task-time-subtitle" class="text-[11px] text-slate-500 font-medium">سيتم التنبيه تلقائياً عند حلول هذا الموعد</span>
           </div>
         </div>
         <div class="w-full sm:w-44">
@@ -246,10 +217,10 @@
             <input type="checkbox" id="advance-rem-enable" onchange="window.toggleAdvanceReminder(this.checked)" class="w-5 h-5 accent-teal-600 rounded-lg cursor-pointer">
             <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-2">
               <i class="fa-solid fa-stopwatch text-teal-600 text-sm"></i>
-              <span>إرسال إشعار قبل وقت المهمة</span>
+              <span id="ui-advance-rem-label">إرسال إشعار قبل وقت المهمة</span>
             </span>
           </div>
-          <span id="custom-offset-preview" class="hidden text-xs font-mono bg-teal-100 text-teal-900 px-2 py-0.5 rounded-lg font-black border border-teal-200">قبل 15 دقيقة</span>
+          <span id="custom-offset-preview" class="hidden text-xs font-mono bg-teal-100 text-teal-900 px-2 py-0.5 rounded-lg font-black border border-teal-200"></span>
         </label>
 
         <!-- لوحة تحديد وقت الإشعار المسبق -->
@@ -257,7 +228,7 @@
           <div class="grid grid-cols-3 gap-2 text-center">
             <!-- الأيام -->
             <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-2xs">
-              <span class="text-[11px] font-bold text-slate-500 block mb-1">أيام</span>
+              <span id="ui-rem-days-label" class="text-[11px] font-bold text-slate-500 block mb-1">أيام</span>
               <div class="flex items-center justify-between gap-1">
                 <button type="button" onclick="window.adjustOffset('days', -1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-black flex items-center justify-center cursor-pointer text-sm">-</button>
                 <input type="number" id="rem-days" min="0" max="30" value="0" oninput="window.onOffsetInputChange()" class="w-full text-center font-black text-sm outline-none bg-transparent">
@@ -266,7 +237,7 @@
             </div>
             <!-- الساعات -->
             <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-2xs">
-              <span class="text-[11px] font-bold text-slate-500 block mb-1">ساعات</span>
+              <span id="ui-rem-hours-label" class="text-[11px] font-bold text-slate-500 block mb-1">ساعات</span>
               <div class="flex items-center justify-between gap-1">
                 <button type="button" onclick="window.adjustOffset('hours', -1)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-black flex items-center justify-center cursor-pointer text-sm">-</button>
                 <input type="number" id="rem-hours" min="0" max="23" value="0" oninput="window.onOffsetInputChange()" class="w-full text-center font-black text-sm outline-none bg-transparent">
@@ -275,7 +246,7 @@
             </div>
             <!-- الدقائق -->
             <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-2xs">
-              <span class="text-[11px] font-bold text-slate-500 block mb-1">دقائق</span>
+              <span id="ui-rem-mins-label" class="text-[11px] font-bold text-slate-500 block mb-1">دقائق</span>
               <div class="flex items-center justify-between gap-1">
                 <button type="button" onclick="window.adjustOffset('mins', -5)" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-black flex items-center justify-center cursor-pointer text-sm">-</button>
                 <input type="number" id="rem-mins" min="0" max="59" value="15" oninput="window.onOffsetInputChange()" class="w-full text-center font-black text-sm outline-none bg-transparent">
@@ -299,8 +270,8 @@
         <!-- لوحة خيارات العادة المتكررة -->
         <div id="habit-options-panel" class="hidden space-y-3 pt-2 border-t border-amber-200/80">
           <div class="flex items-center justify-between gap-1 text-[11px] font-bold">
-            <span class="text-amber-900">أيام التكرار الأسبوعية:</span>
-            <button type="button" onclick="window.selectAllWeekDays()" class="text-amber-800 underline cursor-pointer">كل الأيام</button>
+            <span id="ui-weekdays-label" class="text-amber-900">أيام التكرار الأسبوعية:</span>
+            <button type="button" id="ui-select-all-days" onclick="window.selectAllWeekDays()" class="text-amber-800 underline cursor-pointer">كل الأيام</button>
           </div>
           <div id="weekdays-buttons" class="grid grid-cols-7 gap-1"></div>
 
@@ -314,7 +285,7 @@
               <button type="button" onclick="window.adjustHabitDuration(-1)" class="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 active:scale-95 text-amber-900 font-black flex items-center justify-center cursor-pointer text-lg select-none transition">-</button>
               <div class="flex items-center justify-center gap-1.5 flex-1">
                 <input type="number" id="habit-duration-input" min="1" max="365" value="21" oninput="window.onHabitDurationChange()" class="w-20 text-center font-black text-base text-amber-950 outline-none bg-transparent">
-                <span class="text-xs font-bold text-amber-800">يوم</span>
+                <span id="ui-habit-duration-unit" class="text-xs font-bold text-amber-800">يوم</span>
               </div>
               <button type="button" onclick="window.adjustHabitDuration(1)" class="w-9 h-9 rounded-lg bg-amber-100 hover:bg-amber-200 active:scale-95 text-amber-900 font-black flex items-center justify-center cursor-pointer text-lg select-none transition">+</button>
             </div>
@@ -362,7 +333,7 @@
         <button type="button" onclick="window.confirmDeleteSeries()" class="btn-touch w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-600/20 cursor-pointer" id="btn-delete-series">
           حذف كامل السلسلة المتكررة
         </button>
-        <button type="button" onclick="window.closeDeleteModal()" class="w-full py-2 text-slate-400 hover:text-slate-600 text-xs font-semibold cursor-pointer">
+        <button type="button" id="btn-cancel-modal" onclick="window.closeDeleteModal()" class="w-full py-2 text-slate-400 hover:text-slate-600 text-xs font-semibold cursor-pointer">
           إلغاء
         </button>
       </div>
@@ -371,7 +342,7 @@
 
   <!-- ==================== 6. البرمجة والمنطق الكامل للتطبيق ==================== -->
   <script>
-    // --- 1. قاموس اللغات المتعددة ---
+    // --- 1. قاموس اللغات الشامل والمتكامل ---
     const TRANSLATIONS = {
       ar: {
         appName: 'إنجازاتي',
@@ -381,17 +352,50 @@
         tomorrow: 'غداً',
         completed: 'مكتملة',
         empty: 'لا توجد مهام مجدولة لهذا اليوم. أضف مهمتك الأولى بالأعلى!',
-        quick: 'اقتراحات سريعة للمهام الشائعة:',
         reminderTitle: 'وقت التنبيه قبل الموعد:',
         habitLabel: 'برمجة المهمة كعادة متكررة بالأيام',
+        habitWeekdaysLabel: 'أيام التكرار الأسبوعية:',
+        allDays: 'كل الأيام',
+        habitDurationLabel: 'مدة برمجة العادة (بالأيام):',
+        habitSummaryDays: 'يوماً',
+        dayUnitSingle: 'يوم',
         submitBtn: 'حفظ وإضافة المهمة',
         bottomTitle: 'قائمة المهام',
         days: ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'],
         modalTitle: 'خيارات حذف العادة المتكررة',
-        modalDesc: 'هل تريد حذف هذه المهمة لهذا اليوم فقط أم حذف كامل السلسلة؟',
+        modalDesc: 'هل تريد حذف هذه المهمة لهذا اليوم فقط أم حذف كامل السلسلة المتكررة؟',
         delSingle: 'حذف هذا اليوم فقط',
         delSeries: 'حذف كامل السلسلة المتكررة',
-        notifTitle: 'سجل التنبيهات والإشعارات'
+        cancel: 'إلغاء',
+        notifTitle: 'سجل التنبيهات والإشعارات',
+        notifications: 'الإشعارات',
+        enableNotifTitle: 'تفعيل إشعارات المتصفح',
+        notifHistoryTitle: 'سجل التنبيهات',
+        clearAll: 'مسح الكل',
+        noNotifs: 'لا توجد تنبيهات سابقة.',
+        otherDate: 'تاريخ آخر',
+        taskInputLabel: 'ما الذي تريد إنجازه في هذا اليوم؟',
+        taskPlaceholder: 'اكتب مهمتك هنا...',
+        taskTimeTitle: 'وقت المهمة المحدد',
+        taskTimeSubtitle: 'سيتم التنبيه تلقائياً عند حلول هذا الموعد',
+        advanceRemLabel: 'إرسال إشعار قبل وقت المهمة',
+        daysUnit: 'أيام',
+        hoursUnit: 'ساعات',
+        minsUnit: 'دقائق',
+        dayLetter: 'ي',
+        hourLetter: 'س',
+        minLetter: 'د',
+        exactTime: 'عند الوقت نفسه',
+        before: 'قبل',
+        and: 'و',
+        habitBadge: 'عادة متكررة',
+        toggleDone: 'تغيير حالة الإنجاز',
+        deleteTask: 'حذف المهمة',
+        notifPermSuccess: 'تم تفعيل إشعارات المهام بنجاح!',
+        notifUpcoming: '⏰ اقترب موعد',
+        notifDueSoon: 'الموعد بعد قليل عند الساعة',
+        notifTimeNow: '🔔 حان موعد المهمة الآن',
+        notifCurrentTime: 'الوقت الآن'
       },
       en: {
         appName: 'My Achievements',
@@ -401,9 +405,13 @@
         tomorrow: 'Tomorrow',
         completed: 'Completed',
         empty: 'No tasks scheduled for this day. Add your first task above!',
-        quick: 'Quick Suggestions:',
         reminderTitle: 'Reminder offset before task:',
-        habitLabel: 'Program task as habit in days',
+        habitLabel: 'Set as repeating habit in days',
+        habitWeekdaysLabel: 'Weekly repeat days:',
+        allDays: 'All days',
+        habitDurationLabel: 'Habit duration (in days):',
+        habitSummaryDays: 'days',
+        dayUnitSingle: 'day',
         submitBtn: 'Save & Add Task',
         bottomTitle: 'Tasks List',
         days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -411,7 +419,36 @@
         modalDesc: 'Delete this occurrence only or the entire series?',
         delSingle: 'This day only',
         delSeries: 'Entire habit series',
-        notifTitle: 'Notifications History'
+        cancel: 'Cancel',
+        notifTitle: 'Notifications History',
+        notifications: 'Notifications',
+        enableNotifTitle: 'Enable browser notifications',
+        notifHistoryTitle: 'Notifications history',
+        clearAll: 'Clear all',
+        noNotifs: 'No notifications yet.',
+        otherDate: 'Other date',
+        taskInputLabel: 'What do you want to accomplish today?',
+        taskPlaceholder: 'Type your task here...',
+        taskTimeTitle: 'Scheduled task time',
+        taskTimeSubtitle: 'You will be notified automatically at this time',
+        advanceRemLabel: 'Send reminder before task time',
+        daysUnit: 'Days',
+        hoursUnit: 'Hours',
+        minsUnit: 'Minutes',
+        dayLetter: 'd',
+        hourLetter: 'h',
+        minLetter: 'm',
+        exactTime: 'At exact time',
+        before: 'before',
+        and: '&',
+        habitBadge: 'Repeating habit',
+        toggleDone: 'Toggle completion',
+        deleteTask: 'Delete task',
+        notifPermSuccess: 'Task notifications enabled successfully!',
+        notifUpcoming: '⏰ Upcoming task',
+        notifDueSoon: 'Task starting soon at',
+        notifTimeNow: '🔔 Task is due now',
+        notifCurrentTime: 'Current time'
       },
       fr: {
         appName: 'Mes Succès',
@@ -421,9 +458,13 @@
         tomorrow: 'Demain',
         completed: 'Terminé',
         empty: 'Aucune tâche prévue ce jour. Ajoutez votre première tâche ci-dessus !',
-        quick: 'Suggestions rapides :',
         reminderTitle: 'Rappel avant échéance :',
         habitLabel: 'Programmer comme habitude en jours',
+        habitWeekdaysLabel: 'Jours de répétition hebdomadaire :',
+        allDays: 'Tous les jours',
+        habitDurationLabel: "Durée de l'habitude (en jours) :",
+        habitSummaryDays: 'jours',
+        dayUnitSingle: 'jour',
         submitBtn: 'Enregistrer la tâche',
         bottomTitle: 'Liste des tâches',
         days: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
@@ -431,7 +472,36 @@
         modalDesc: 'Supprimer ce jour uniquement ou toute la série ?',
         delSingle: 'Ce jour seulement',
         delSeries: 'Toute la série',
-        notifTitle: 'Historique des notifications'
+        cancel: 'Annuler',
+        notifTitle: 'Historique des notifications',
+        notifications: 'Notifications',
+        enableNotifTitle: 'Activer les notifications du navigateur',
+        notifHistoryTitle: 'Historique des notifications',
+        clearAll: 'Tout effacer',
+        noNotifs: 'Aucune notification pour le moment.',
+        otherDate: 'Autre date',
+        taskInputLabel: "Que souhaitez-vous accomplir aujourd'hui ?",
+        taskPlaceholder: 'Écrivez votre tâche ici...',
+        taskTimeTitle: 'Heure de la tâche',
+        taskTimeSubtitle: 'Vous serez notifié automatiquement à cette heure',
+        advanceRemLabel: "Envoyer un rappel avant l'heure",
+        daysUnit: 'Jours',
+        hoursUnit: 'Heures',
+        minsUnit: 'Minutes',
+        dayLetter: 'j',
+        hourLetter: 'h',
+        minLetter: 'm',
+        exactTime: "À l'heure exacte",
+        before: 'avant',
+        and: 'et',
+        habitBadge: 'Habitude répétée',
+        toggleDone: "Changer l'état",
+        deleteTask: 'Supprimer la tâche',
+        notifPermSuccess: 'Notifications activées avec succès !',
+        notifUpcoming: '⏰ Tâche à venir',
+        notifDueSoon: 'La tâche commence bientôt à',
+        notifTimeNow: "🔔 C'est l'heure de la tâche",
+        notifCurrentTime: 'Heure actuelle'
       },
       es: {
         appName: 'Mis Logros',
@@ -441,9 +511,13 @@
         tomorrow: 'Mañana',
         completed: 'Completado',
         empty: 'No hay tareas programadas para este día. ¡Añade tu primera tarea arriba!',
-        quick: 'Sugerencias rápidas:',
         reminderTitle: 'Recordatorio antes:',
         habitLabel: 'Programar como hábito en días',
+        habitWeekdaysLabel: 'Días de repetición semanal:',
+        allDays: 'Todos los días',
+        habitDurationLabel: 'Duración del hábito (en días):',
+        habitSummaryDays: 'días',
+        dayUnitSingle: 'día',
         submitBtn: 'Guardar y agregar tarea',
         bottomTitle: 'Lista de tareas',
         days: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
@@ -451,58 +525,119 @@
         modalDesc: '¿Eliminar solo hoy o toda la serie?',
         delSingle: 'Solo este día',
         delSeries: 'Toda la serie',
-        notifTitle: 'Historial de notificaciones'
+        cancel: 'Cancelar',
+        notifTitle: 'Historial de notificaciones',
+        notifications: 'Notificaciones',
+        enableNotifTitle: 'Activar notificaciones del navegador',
+        notifHistoryTitle: 'Historial de notificaciones',
+        clearAll: 'Borrar todo',
+        noNotifs: 'No hay notificaciones aún.',
+        otherDate: 'Otra fecha',
+        taskInputLabel: '¿Qué quieres lograr hoy?',
+        taskPlaceholder: 'Escribe tu tarea aquí...',
+        taskTimeTitle: 'Hora de la tarea',
+        taskTimeSubtitle: 'Se te notificará automáticamente a هذه hora',
+        advanceRemLabel: 'Enviar recordatorio antes de la hora',
+        daysUnit: 'Días',
+        hoursUnit: 'Horas',
+        minsUnit: 'Minutos',
+        dayLetter: 'd',
+        hourLetter: 'h',
+        minLetter: 'm',
+        exactTime: 'A la hora exacta',
+        before: 'antes',
+        and: 'y',
+        habitBadge: 'Hábito repetitivo',
+        toggleDone: 'Cambiar estado',
+        deleteTask: 'Eliminar tarea',
+        notifPermSuccess: '¡Notificaciones activadas con éxito!',
+        notifUpcoming: '⏰ Tarea próxima',
+        notifDueSoon: 'La tarea empieza pronto a las',
+        notifTimeNow: '🔔 Es hora de la tarea',
+        notifCurrentTime: 'Hora actual'
       },
-      de: {
-        appName: 'Meine Erfolge',
-        appSubtitle: 'Tägliche Aufgaben und Gewohnheiten',
-        today: 'Heute',
-        yesterday: 'Gestern',
-        tomorrow: 'Morgen',
-        completed: 'Erledigt',
-        empty: 'Keine Aufgaben für diesen Tag. Fügen Sie oben Ihre erste Aufgabe hinzu!',
-        quick: 'Schnellvorschläge:',
-        reminderTitle: 'Erinnerung vor Termin:',
-        habitLabel: 'Als Gewohnheit in Tagen festlegen',
-        submitBtn: 'Aufgabe speichern',
-        bottomTitle: 'Aufgabenliste',
-        days: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
-        modalTitle: 'Gewohnheit löschen',
-        modalDesc: 'Nur diesen Tag oder die gesamte Serie löschen?',
-        delSingle: 'Nur diesen Tag',
-        delSeries: 'Ganze Serie',
-        notifTitle: 'Benachrichtigungsverlauf'
+      zh: {
+        appName: '我的成就',
+        appSubtitle: '每日任务与习惯追踪',
+        today: '今天',
+        yesterday: '昨天',
+        tomorrow: '明天',
+        completed: '已完成',
+        empty: '今天暂无安排的任务。请在上方添加你的第一个任务！',
+        reminderTitle: '提前提醒时间：',
+        habitLabel: '按天数设置为重复习惯',
+        habitWeekdaysLabel: '每周重复日：',
+        allDays: '全部',
+        habitDurationLabel: '习惯培养时长（天数）：',
+        habitSummaryDays: '天',
+        dayUnitSingle: '天',
+        submitBtn: '保存并添加任务',
+        bottomTitle: '任务列表',
+        days: ['日', '一', '二', '三', '四', '五', '六'],
+        modalTitle: '删除习惯选项',
+        modalDesc: '仅删除今天的这一项，还是删除整个重复系列？',
+        delSingle: '仅今天这项',
+        delSeries: '删除整个系列',
+        cancel: '取消',
+        notifTitle: '通知与提醒记录',
+        notifications: '通知',
+        enableNotifTitle: '开启浏览器通知',
+        notifHistoryTitle: '通知记录',
+        clearAll: '清空全部',
+        noNotifs: '暂无历史提醒。',
+        otherDate: '其他日期',
+        taskInputLabel: '今天你想完成什么？',
+        taskPlaceholder: '在此输入你的任务...',
+        taskTimeTitle: '指定任务时间',
+        taskTimeSubtitle: '到达该时间将自动发出提醒',
+        advanceRemLabel: '在任务时间前发送提醒',
+        daysUnit: '天',
+        hoursUnit: '小时',
+        minsUnit: '分钟',
+        dayLetter: '天',
+        hourLetter: '时',
+        minLetter: '分',
+        exactTime: '准时提醒',
+        before: '提前',
+        and: '',
+        habitBadge: '重复习惯',
+        toggleDone: '切换完成状态',
+        deleteTask: '删除任务',
+        notifPermSuccess: '任务通知已成功开启！',
+        notifUpcoming: '⏰ 任务即将到来',
+        notifDueSoon: '任务即将于以下时间开始：',
+        notifTimeNow: '🔔 任务时间到了',
+        notifCurrentTime: '当前时间'
       }
     };
 
-    // --- 2. إدارة البيانات والحالة العامة ---
+    // --- 2. إدارة البيانات والحالة العامة مع حفظ اللغة في localStorage ---
     function getTodayKey() {
       const d = new Date();
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     }
 
+    // استرجاع اللغة المحفوظة في المتصفح أو اعتماد العربية كافتراضي
     let currentLang = 'ar';
+    try {
+      const savedLang = localStorage.getItem('my_achievements_app_lang');
+      if (savedLang && TRANSLATIONS[savedLang]) {
+        currentLang = savedLang;
+      }
+    } catch(e) {}
+
     let selectedDate = getTodayKey();
     let habitSelectedDays = [0, 1, 2, 3, 4, 5, 6];
     let habitDurationDays = 21;
     let pendingDeleteTask = null;
 
-    function getInitialTasks() {
-      const today = getTodayKey();
-      return [
-        { id: 'init-1', title: 'صلاة الفجر وقراءة أذكار الصباح', date: today, time: '05:30', completed: true, remDays: 0, remHours: 0, remMins: 15 },
-        { id: 'init-2', title: 'تمارين رياضية صباحية (كارديو)', date: today, time: '07:00', completed: false, remDays: 0, remHours: 0, remMins: 10 },
-        { id: 'init-3', title: 'شرب 2 لتر من الماء خلال اليوم', date: today, time: '09:00', completed: false, remDays: 0, remHours: 0, remMins: 0 },
-        { id: 'init-4', title: 'قراءة ورد القرآن أو 20 صفحة من كتاب', date: today, time: '20:00', completed: false, remDays: 0, remHours: 0, remMins: 30 }
-      ];
-    }
-
     let tasks = [];
     try {
       const stored = localStorage.getItem('my_achievements_app_tasks_v6');
-      tasks = stored ? JSON.parse(stored) : getInitialTasks();
+      tasks = stored ? JSON.parse(stored) : [];
+      tasks = tasks.filter(t => !t.id.startsWith('init-'));
     } catch(e) {
-      tasks = getInitialTasks();
+      tasks = [];
     }
 
     let notifications = [];
@@ -574,7 +709,7 @@
       carousel.innerHTML = '';
 
       const base = new Date();
-      base.setDate(base.getDate() - 4); // 4 أيام ماضية + 26 يوماً قادمة
+      base.setDate(base.getDate() - 4);
 
       for (let i = 0; i < 31; i++) {
         const d = new Date(base);
@@ -610,7 +745,7 @@
         carousel.appendChild(btn);
       }
 
-      // ضبط نصوص التاريخ المختار
+      // ضبط نصوص التاريخ المختار وتسمية اليوم النسبي (اليوم، أمس، غداً)
       const diff = Math.round((new Date(selectedDate.replace(/-/g, '/')) - new Date(getTodayKey().replace(/-/g, '/'))) / (1000 * 60 * 60 * 24));
       let relLabel = '';
       if (diff === 0) relLabel = TRANSLATIONS[currentLang].today;
@@ -634,7 +769,7 @@
       if (picker) picker.value = selectedDate;
     };
 
-    // --- 5. لوحة وقت الإشعار المسبق ---
+    // --- 5. لوحة وقت الإشعار المسبق مع دعم الترجمة بالكامل ---
     window.toggleAdvanceReminder = function(show) {
       const panel = document.getElementById('advance-rem-panel');
       const preview = document.getElementById('custom-offset-preview');
@@ -663,15 +798,22 @@
       const hours = parseInt(document.getElementById('rem-hours')?.value, 10) || 0;
       const mins = parseInt(document.getElementById('rem-mins')?.value, 10) || 0;
 
+      const t = TRANSLATIONS[currentLang];
       const parts = [];
-      if (days > 0) parts.push(`${days} يوم`);
-      if (hours > 0) parts.push(`${hours} ساعة`);
-      if (mins > 0) parts.push(`${mins} دقيقة`);
+      if (days > 0) parts.push(`${days} ${t.daysUnit}`);
+      if (hours > 0) parts.push(`${hours} ${t.hoursUnit}`);
+      if (mins > 0) parts.push(`${mins} ${t.minsUnit}`);
 
       if (parts.length === 0) {
-        preview.textContent = 'عند الوقت نفسه';
+        preview.textContent = t.exactTime;
       } else {
-        preview.textContent = 'قبل ' + parts.join(' و ');
+        if (currentLang === 'en') {
+          preview.textContent = parts.join(` ${t.and} `) + ' ' + t.before;
+        } else if (currentLang === 'zh') {
+          preview.textContent = t.before + ' ' + parts.join(' ');
+        } else {
+          preview.textContent = t.before + ' ' + parts.join(` ${t.and} `);
+        }
       }
     };
 
@@ -719,7 +861,7 @@
       if (input) input.value = val;
       habitDurationDays = val;
       const sum = document.getElementById('habit-duration-summary');
-      if (sum) sum.textContent = val + ' يوماً';
+      if (sum) sum.textContent = val + ' ' + TRANSLATIONS[currentLang].habitSummaryDays;
     };
 
     window.onHabitDurationChange = function() {
@@ -729,19 +871,7 @@
       if (val > 365) val = 365;
       habitDurationDays = val;
       const sum = document.getElementById('habit-duration-summary');
-      if (sum) sum.textContent = val + ' يوماً';
-    };
-
-    window.applySuggestion = function(title, time) {
-      const titleInput = document.getElementById('task-title-input');
-      const timeInput = document.getElementById('task-time-input');
-      if (titleInput) {
-        titleInput.value = title;
-        titleInput.focus();
-      }
-      if (timeInput && time) {
-        timeInput.value = time;
-      }
+      if (sum) sum.textContent = val + ' ' + TRANSLATIONS[currentLang].habitSummaryDays;
     };
 
     // --- 7. إضافة المهمة أو سلسلة العادة ---
@@ -873,18 +1003,19 @@
       window.closeDeleteModal();
     };
 
-    // --- 10. عرض قائمة المهام المتجاوبة ---
+    // --- 10. عرض قائمة المهام المتجاوبة والمترجمة بالكامل ---
     window.renderTasksList = function() {
       const container = document.getElementById('tasks-container');
       const countEl = document.getElementById('tasks-header-count');
       const doneEl = document.getElementById('tasks-header-done');
       if (!container) return;
 
-      const dayTasks = tasks.filter(t => t.date === selectedDate);
-      const doneTasks = dayTasks.filter(t => t.completed);
+      const t = TRANSLATIONS[currentLang];
+      const dayTasks = tasks.filter(task => task.date === selectedDate);
+      const doneTasks = dayTasks.filter(task => task.completed);
 
-      if (countEl) countEl.innerHTML = `<i class="fa-solid fa-list-check text-teal-600"></i> <span>${TRANSLATIONS[currentLang].bottomTitle} (${dayTasks.length})</span>`;
-      if (doneEl) doneEl.textContent = `${doneTasks.length} ${TRANSLATIONS[currentLang].completed}`;
+      if (countEl) countEl.innerHTML = `<i class="fa-solid fa-list-check text-teal-600"></i> <span>${t.bottomTitle} (${dayTasks.length})</span>`;
+      if (doneEl) doneEl.textContent = `${doneTasks.length} ${t.completed}`;
 
       container.innerHTML = '';
 
@@ -894,7 +1025,7 @@
             <div class="w-14 h-14 mx-auto rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center">
               <i class="fa-solid fa-clipboard-list text-2xl"></i>
             </div>
-            <p class="text-xs sm:text-sm font-bold text-slate-500 max-w-xs mx-auto">${TRANSLATIONS[currentLang].empty}</p>
+            <p class="text-xs sm:text-sm font-bold text-slate-500 max-w-xs mx-auto">${t.empty}</p>
           </div>
         `;
         return;
@@ -911,18 +1042,21 @@
         let reminderBadge = '';
         if (task.hasAdvanceReminder) {
           const parts = [];
-          if (task.remDays > 0) parts.push(`${task.remDays}ي`);
-          if (task.remHours > 0) parts.push(`${task.remHours}س`);
-          if (task.remMins > 0) parts.push(`${task.remMins}د`);
+          if (task.remDays > 0) parts.push(`${task.remDays}${t.dayLetter}`);
+          if (task.remHours > 0) parts.push(`${task.remHours}${t.hourLetter}`);
+          if (task.remMins > 0) parts.push(`${task.remMins}${t.minLetter}`);
+
+          const offsetStr = currentLang === 'en' ? `${parts.join(` ${t.and} `)} ${t.before}` : `${t.before} ${parts.join(` ${t.and} `)}`;
+
           reminderBadge = `<span class="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-lg border border-amber-200">
-            <i class="fa-solid fa-bell text-[9px] text-amber-700"></i> قبل ${parts.join(' و ')}
+            <i class="fa-solid fa-bell text-[9px] text-amber-700"></i> ${offsetStr}
           </span>`;
         }
 
         let habitBadge = '';
         if (task.groupId) {
           habitBadge = `<span class="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-lg border border-amber-200">
-            <i class="fa-solid fa-repeat text-[9px] text-amber-700"></i> عادة متكررة
+            <i class="fa-solid fa-repeat text-[9px] text-amber-700"></i> ${t.habitBadge}
           </span>`;
         }
 
@@ -932,7 +1066,7 @@
               task.completed 
                 ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs' 
                 : 'bg-slate-100 hover:bg-teal-50 border-slate-300 text-transparent hover:text-teal-600'
-            }" title="تغيير حالة الإنجاز">
+            }" title="${t.toggleDone}">
               <i class="fa-solid fa-check text-sm ${task.completed ? 'text-white' : ''}"></i>
             </button>
             <div class="min-w-0 flex-1">
@@ -948,7 +1082,7 @@
               </div>
             </div>
           </div>
-          <button type="button" onclick="window.requestDeleteTask('${task.id}')" class="w-9 h-9 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center shrink-0 transition active:scale-90 cursor-pointer" title="حذف المهمة">
+          <button type="button" onclick="window.requestDeleteTask('${task.id}')" class="w-9 h-9 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center shrink-0 transition active:scale-90 cursor-pointer" title="${t.deleteTask}">
             <i class="fa-regular fa-trash-can text-sm"></i>
           </button>
         `;
@@ -985,7 +1119,7 @@
 
       list.innerHTML = '';
       if (notifications.length === 0) {
-        list.innerHTML = `<div class="text-center py-4 text-slate-400 text-xs">لا توجد تنبيهات سابقة.</div>`;
+        list.innerHTML = `<div class="text-center py-4 text-slate-400 text-xs">${TRANSLATIONS[currentLang].noNotifs}</div>`;
         return;
       }
 
@@ -1009,7 +1143,7 @@
           updateNotificationButton();
           if (permission === 'granted') {
             try {
-              new Notification('🔔 إنجازاتي', { body: 'تم تفعيل إشعارات المهام بنجاح!' });
+              new Notification('🔔 ' + TRANSLATIONS[currentLang].appName, { body: TRANSLATIONS[currentLang].notifPermSuccess });
             } catch(e) {}
           }
         });
@@ -1017,41 +1151,51 @@
     };
 
     function updateNotificationButton() {
-      const btn = document.getElementById('btn-request-notif');
-      const icon = document.getElementById('notif-perm-icon');
-      if (!btn || !('Notification' in window)) return;
-      if (Notification.permission === 'granted') {
-        btn.className = 'h-9 px-2 sm:px-2.5 rounded-xl bg-teal-50 text-teal-800 border border-teal-200 text-xs font-bold flex items-center gap-1.5 cursor-default';
-        if (icon) icon.className = 'fa-solid fa-bell text-xs text-teal-600';
+      const banner = document.getElementById('notif-perm-banner');
+      if (!banner) return;
+      const t = TRANSLATIONS[currentLang];
+      if ('Notification' in window && Notification.permission === 'granted') {
+        banner.className = 'mb-2.5 p-2 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-between text-xs text-teal-800 font-bold';
+        banner.innerHTML = `
+          <div class="flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-check text-teal-600 text-xs"></i>
+            <span>${t.notifPermActive || 'إشعارات المتصفح مفعّلة ✓'}</span>
+          </div>
+        `;
+      } else {
+        const textEl = document.getElementById('notif-banner-text');
+        const btnTextEl = document.getElementById('notif-banner-btn-text');
+        if (textEl) textEl.textContent = t.enableNotifTitle || 'تفعيل إشعارات المتصفح';
+        if (btnTextEl) btnTextEl.textContent = t.notifBannerBtn || 'تفعيل';
       }
     }
 
     // تحقق من المواعيد كل 5 ثوانٍ
     setInterval(() => {
       const now = new Date();
-      const curDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
       const curTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      const t = TRANSLATIONS[currentLang];
 
-      tasks.forEach(t => {
-        if (!t.time) return;
+      tasks.forEach(task => {
+        if (!task.time) return;
 
-        const [tH, tM] = t.time.split(':').map(Number);
-        const taskTarget = new Date(t.date.replace(/-/g, '/'));
+        const [tH, tM] = task.time.split(':').map(Number);
+        const taskTarget = new Date(task.date.replace(/-/g, '/'));
         taskTarget.setHours(tH, tM, 0, 0);
 
         // 1. الإشعار المسبق
-        if (t.hasAdvanceReminder && !t.advanceNotified) {
-          const advOffsetMs = ((t.remDays || 0) * 86400 + (t.remHours || 0) * 3600 + (t.remMins || 0) * 60) * 1000;
+        if (task.hasAdvanceReminder && !task.advanceNotified) {
+          const advOffsetMs = ((task.remDays || 0) * 86400 + (task.remHours || 0) * 3600 + (task.remMins || 0) * 60) * 1000;
           const advanceTarget = new Date(taskTarget.getTime() - advOffsetMs);
 
           if (now >= advanceTarget && now < taskTarget) {
-            t.advanceNotified = true;
-            notifications.unshift({ title: `⏰ اقترب موعد: ${t.title}`, time: curTime });
+            task.advanceNotified = true;
+            notifications.unshift({ title: `${t.notifUpcoming}: ${task.title}`, time: curTime });
             playBeep('alert');
             try {
               if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('⏰ تذكير مسبق بالمهمة: ' + t.title, {
-                  body: `الموعد بعد قليل عند الساعة ${t.time}`
+                new Notification(`${t.notifUpcoming}: ${task.title}`, {
+                  body: `${t.notifDueSoon} ${task.time}`
                 });
               }
             } catch(e) {}
@@ -1061,15 +1205,15 @@
         }
 
         // 2. الإشعار الدقيق عند وقت المهمة
-        if (!t.exactNotified) {
+        if (!task.exactNotified) {
           if (now >= taskTarget && now <= new Date(taskTarget.getTime() + 120000)) {
-            t.exactNotified = true;
-            notifications.unshift({ title: `🔔 حان موعد المهمة الآن: ${t.title}`, time: curTime });
+            task.exactNotified = true;
+            notifications.unshift({ title: `${t.notifTimeNow}: ${task.title}`, time: curTime });
             playBeep('alert');
             try {
               if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('🔔 حان موعد مهمتك الآن: ' + t.title, {
-                  body: `الوقت الآن: ${t.time}`
+                new Notification(`${t.notifTimeNow}: ${task.title}`, {
+                  body: `${t.notifCurrentTime}: ${task.time}`
                 });
               }
             } catch(e) {}
@@ -1080,7 +1224,7 @@
       });
     }, 5000);
 
-    // --- 12. التنقل وتبديل اللغة ---
+    // --- 12. التنقل وتبديل اللغة مع الحفظ في localStorage والترجمة الشاملة ---
     window.jumpToToday = function() {
       selectedDate = getTodayKey();
       window.renderApp();
@@ -1094,8 +1238,22 @@
     };
 
     window.changeLanguage = function(lang) {
+      if (!TRANSLATIONS[lang]) lang = 'ar';
       currentLang = lang;
-      document.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+      // حفظ اللغة في localStorage لتبقى عند التحديث
+      try {
+        localStorage.setItem('my_achievements_app_lang', lang);
+      } catch(e) {}
+
+      const isRtl = lang === 'ar';
+      document.documentElement.lang = lang;
+      document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+      document.dir = isRtl ? 'rtl' : 'ltr';
+      document.body.dir = isRtl ? 'rtl' : 'ltr';
+
+      const select = document.getElementById('lang-select');
+      if (select && select.value !== lang) select.value = lang;
 
       const t = TRANSLATIONS[lang];
       const setText = (id, txt) => {
@@ -1103,17 +1261,42 @@
         if (el) el.textContent = txt;
       };
 
-      setText('ui-title', t.appName);
-      setText('ui-subtitle', t.appSubtitle);
+      // ترجمة جميع العناصر والقوائم والأزرار بالكامل
       setText('ui-today-btn', t.today);
-      setText('ui-suggestions-title', t.quick);
+      setText('ui-other-date-text', t.otherDate);
+      setText('notif-perm-text', t.notifications);
+      setText('ui-notif-title', t.notifTitle);
+      setText('ui-clear-notifs', t.clearAll);
+      setText('ui-task-input-label', t.taskInputLabel);
+      setText('ui-task-time-title', t.taskTimeTitle);
+      setText('ui-task-time-subtitle', t.taskTimeSubtitle);
+      setText('ui-advance-rem-label', t.advanceRemLabel);
+      setText('ui-rem-days-label', t.daysUnit);
+      setText('ui-rem-hours-label', t.hoursUnit);
+      setText('ui-rem-mins-label', t.minsUnit);
       setText('ui-habit-label', t.habitLabel);
+      setText('ui-weekdays-label', t.habitWeekdaysLabel);
+      setText('ui-select-all-days', t.allDays);
+      setText('ui-habit-duration-label', t.habitDurationLabel);
+      setText('ui-habit-duration-unit', t.dayUnitSingle);
       setText('ui-submit-btn', t.submitBtn);
       setText('ui-modal-title', t.modalTitle);
       setText('ui-modal-desc', t.modalDesc);
       setText('btn-delete-single', t.delSingle);
       setText('btn-delete-series', t.delSeries);
-      setText('ui-notif-title', t.notifTitle);
+      setText('btn-cancel-modal', t.cancel);
+
+      const placeholderInput = document.getElementById('task-title-input');
+      if (placeholderInput) placeholderInput.placeholder = t.taskPlaceholder;
+
+      const notifBtn = document.getElementById('btn-request-notif');
+      if (notifBtn) notifBtn.title = t.enableNotifTitle;
+
+      const notifHistBtn = document.getElementById('btn-notif-history');
+      if (notifHistBtn) notifHistBtn.title = t.notifHistoryTitle;
+
+      const sum = document.getElementById('habit-duration-summary');
+      if (sum) sum.textContent = habitDurationDays + ' ' + t.habitSummaryDays;
 
       window.renderApp();
     };
@@ -1121,16 +1304,19 @@
     window.renderApp = function() {
       window.renderDaysCarousel();
       window.renderTasksList();
+      window.renderWeekdaysButtons();
       window.onOffsetInputChange();
       window.renderNotifications();
       updateNotificationButton();
     };
 
-    // تشغيل التطبيق فور اكتمال تحميل الصفحة
+    // تشغيل التطبيق فور اكتمال تحميل الصفحة وتطبيق اللغة المحفوظة
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', window.renderApp);
+      document.addEventListener('DOMContentLoaded', () => {
+        window.changeLanguage(currentLang);
+      });
     } else {
-      window.renderApp();
+      window.changeLanguage(currentLang);
     }
   </script>
 </body>
