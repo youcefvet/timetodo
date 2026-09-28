@@ -43,7 +43,7 @@
     })();
   </script>
 
-  <!-- خطوط Google Fonts: Cairo للعربية، Inter للإنجليزية، و Plus Jakarta Sans للشعار -->
+  <!-- خطوط Google Fonts: Cairo للعربية، Inter للإنجليزية، و Plus Jakarta Sans لشعار Timetodo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
@@ -1521,45 +1521,93 @@
       setTimeout(() => updateOnlineStatus(false), 500);
     }
 
-    // ==================== 14. كود الـ Service Worker المدمج بالكامل (Inline Self-Contained) ====================
-    // يتم إنشاء الـ Service Worker برمجياً من كود نصي وتحويله إلى Blob URL ليتم تسجيله دون الحاجة لملف sw.js خارجي!
+    // ==================== 14. كود الـ Service Worker المدمج بالكامل باستراتيجية (Cache-First) ====================
+    // الاستراتيجية: Cache-First الفوري لمنع شاشة الخطأ نهائياً عند Refresh بدون إنترنت، مع التحديث في الخلفية عند توفر الاتصال
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
+        // تخزين الصفحة الحالية فوراً في الكاش كضمان مسبق
+        try {
+          caches.open('timetodo-cache-v3').then(cache => {
+            cache.add(window.location.href).catch(() => {});
+            cache.add(window.location.pathname).catch(() => {});
+          });
+        } catch(e) {}
+
         const swScript = `
-          const CACHE_NAME = 'timetodo-standalone-v1';
-          
-          self.addEventListener('install', (e) => {
+          const CACHE_NAME = 'timetodo-cache-v3';
+
+          self.addEventListener('install', (event) => {
             self.skipWaiting();
           });
 
-          self.addEventListener('activate', (e) => {
-            e.waitUntil(
+          self.addEventListener('activate', (event) => {
+            event.waitUntil(
               caches.keys().then((keys) => {
                 return Promise.all(
-                  keys.map((k) => {
-                    if (k !== CACHE_NAME) return caches.delete(k);
+                  keys.map((key) => {
+                    if (key !== CACHE_NAME) return caches.delete(key);
                   })
                 );
               }).then(() => self.clients.claim())
             );
           });
 
-          self.addEventListener('fetch', (e) => {
-            const req = e.request;
+          self.addEventListener('fetch', (event) => {
+            const req = event.request;
             if (req.method !== 'GET') return;
 
-            // الاستجابة من الكاش أولاً أو الشبكة ثم التخزين التلقائي
-            e.respondWith(
-              caches.match(req).then((cached) => {
-                const networkFetch = fetch(req).then((res) => {
-                  if (res && (res.status === 200 || res.type === 'opaque')) {
-                    const resClone = res.clone();
-                    caches.open(CACHE_NAME).then((c) => c.put(req, resClone));
-                  }
-                  return res;
-                }).catch(() => cached || new Response('Offline', { status: 503 }));
+            // 1. استراتيجية Cache-First لطلبات التنقل والصفحة الرئيسية لمنع شاشة الخطأ عند الـ Refresh في وضع Offline
+            if (req.mode === 'navigate') {
+              event.respondWith(
+                caches.match(req).then((cachedResponse) => {
+                  // إذا كانت موجودة في الكاش، أعدها فوراً وبدون أي تأخير، وحدثها في الخلفية إن وجد إنترنت
+                  const fetchPromise = fetch(req).then((networkResponse) => {
+                    if (networkResponse && networkResponse.status === 200) {
+                      const clone = networkResponse.clone();
+                      caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(req, clone);
+                        cache.put('./', clone);
+                        cache.put('/', clone);
+                      });
+                    }
+                    return networkResponse;
+                  }).catch(() => null);
 
-                return cached || networkFetch;
+                  if (cachedResponse) {
+                    return cachedResponse;
+                  }
+
+                  // إن لم توجد مطابقة حرفية، ابحث عن مسار الجذر أو أي نسخة HTML مخزنة
+                  return fetchPromise.then(res => res || caches.match('./') || caches.match('/') || new Response(
+                    '<!DOCTYPE html><html><body style="font-family:sans-serif;text-align:center;padding:40px;"><h2>Timetodo Offline</h2><p>يرجى إعادة تحميل الصفحة.</p></body></html>',
+                    { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+                  ));
+                })
+              );
+              return;
+            }
+
+            // 2. استراتيجية Cache-First لكافة الموارد الأخرى (الخطوط، الأيقونات، التنسيقات، والمكتبات)
+            event.respondWith(
+              caches.match(req).then((cached) => {
+                if (cached) {
+                  // تحديث صامت في الخلفية عند توفر الإنترنت
+                  fetch(req).then((netRes) => {
+                    if (netRes && (netRes.status === 200 || netRes.type === 'opaque')) {
+                      caches.open(CACHE_NAME).then(c => c.put(req, netRes.clone()));
+                    }
+                  }).catch(() => {});
+                  return cached;
+                }
+
+                // جلب المورد وحفظه في الكاش للاستخدام القادم
+                return fetch(req).then((netRes) => {
+                  if (netRes && (netRes.status === 200 || netRes.type === 'opaque')) {
+                    const clone = netRes.clone();
+                    caches.open(CACHE_NAME).then(c => c.put(req, clone));
+                  }
+                  return netRes;
+                }).catch(() => new Response('', { status: 408 }));
               })
             );
           });
@@ -1569,11 +1617,10 @@
           const blob = new Blob([swScript], { type: 'application/javascript' });
           const swUrl = URL.createObjectURL(blob);
           
-          // محاولة تسجيل الـ Blob أولاً، أو الرجوع للملف إذا كان متاحاً في السيرفر
           navigator.serviceWorker.register(swUrl, { scope: './' }).then((reg) => {
-            console.log('Embedded Service Worker registered successfully:', reg.scope);
+            console.log('Embedded Cache-First Service Worker active:', reg.scope);
           }).catch(() => {
-            navigator.serviceWorker.register('/sw.js').catch((err) => console.log(err));
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
           });
         } catch(e) {
           navigator.serviceWorker.register('/sw.js').catch(() => {});
