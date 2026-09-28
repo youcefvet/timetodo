@@ -4,17 +4,51 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0d9488">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Timetodo">
   <title>Timetodo - منظّم المهمات اليومية والعادات</title>
-  <meta name="description" content="تطبيق لتنظيم المهمات اليومية مع شريط قابل للتمرير، وخاصية التذكير والإشعارات ودعم اللغات وبرمجة العادات.">
+  <meta name="description" content="تطبيق لتنظيم المهمات اليومية مع شريط قابل للتمرير، وخاصية التذكير والإشعارات ودعم اللغات وبرمجة العادات يعمل بدون إنترنت (PWA).">
   <meta property="og:title" content="Timetodo - منظّم المهمات اليومية والعادات">
-  <meta property="og:description" content="تطبيق لتنظيم المهمات اليومية مع شريط قابل للتمرير، وخاصية التذكير والإشعارات ودعم اللغات وبرمجة العادات.">
+  <meta property="og:description" content="تطبيق لتنظيم المهمات اليومية مع شريط قابل للتمرير، وخاصية التذكير والإشعارات ودعم اللغات وبرمجة العادات يعمل بدون إنترنت (PWA).">
 
-  <!-- خطوط Google Fonts: Cairo للعربية، Inter للإنجليزية، و Plus Jakarta Sans لشعار Timetodo -->
+  <!-- أيقونة التطبيق SVG مدمجة بالكامل Data-URI (لا تحتاج لأي ملف خارجي) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%230d9488'/%3E%3Ccircle cx='256' cy='256' r='140' fill='none' stroke='%23ffffff' stroke-opacity='0.3' stroke-width='14'/%3E%3Cline x1='256' y1='256' x2='256' y2='160' stroke='%23ffffff' stroke-width='16' stroke-linecap='round'/%3E%3Cline x1='256' y1='256' x2='320' y2='256' stroke='%23ffffff' stroke-width='16' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='256' r='14' fill='%23ffffff'/%3E%3Ccircle cx='340' cy='340' r='60' fill='%23042f2e'/%3E%3Cpath d='M312 342 L332 362 L370 322' fill='none' stroke='%232dd4bf' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%230d9488'/%3E%3Ccircle cx='256' cy='256' r='140' fill='none' stroke='%23ffffff' stroke-opacity='0.3' stroke-width='14'/%3E%3Cline x1='256' y1='256' x2='256' y2='160' stroke='%23ffffff' stroke-width='16' stroke-linecap='round'/%3E%3Cline x1='256' y1='256' x2='320' y2='256' stroke='%23ffffff' stroke-width='16' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='256' r='14' fill='%23ffffff'/%3E%3Ccircle cx='340' cy='340' r='60' fill='%23042f2e'/%3E%3Cpath d='M312 342 L332 362 L370 322' fill='none' stroke='%232dd4bf' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+  <!-- ملف Web Manifest مدمج بالكامل كـ Data-URI للمتصفح -->
+  <link rel="manifest" id="manifest-placeholder">
+  <script>
+    (function injectManifest() {
+      const iconSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%230d9488'/%3E%3Ccircle cx='256' cy='256' r='140' fill='none' stroke='%23ffffff' stroke-opacity='0.3' stroke-width='14'/%3E%3Cline x1='256' y1='256' x2='256' y2='160' stroke='%23ffffff' stroke-width='16' stroke-linecap='round'/%3E%3Cline x1='256' y1='256' x2='320' y2='256' stroke='%23ffffff' stroke-width='16' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='256' r='14' fill='%23ffffff'/%3E%3Ccircle cx='340' cy='340' r='60' fill='%23042f2e'/%3E%3Cpath d='M312 342 L332 362 L370 322' fill='none' stroke='%232dd4bf' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E";
+      const manifest = {
+        name: "Timetodo - منظّم المهمات اليومية والعادات",
+        short_name: "Timetodo",
+        description: "تطبيق لتنظيم المهمات اليومية والعادات وتذكيرات المواعيد يعمل بدون إنترنت (PWA).",
+        start_url: "./",
+        display: "standalone",
+        background_color: "#f8fafc",
+        theme_color: "#0d9488",
+        icons: [
+          { src: iconSvg, sizes: "512x512", type: "image/svg+xml", purpose: "any" },
+          { src: iconSvg, sizes: "512x512", type: "image/svg+xml", purpose: "maskable" }
+        ]
+      };
+      const stringManifest = JSON.stringify(manifest);
+      const blob = new Blob([stringManifest], { type: 'application/json' });
+      const manifestURL = URL.createObjectURL(blob);
+      const el = document.getElementById('manifest-placeholder');
+      if (el) el.setAttribute('href', manifestURL);
+    })();
+  </script>
+
+  <!-- خطوط Google Fonts: Cairo للعربية، Inter للإنجليزية، و Plus Jakarta Sans للشعار -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <!-- مكتبة FontAwesome 6 (CDN مباشر وحي) -->
+  <!-- مكتبة FontAwesome 6 (CDN مباشر) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <!-- مكتبة Tailwind CSS (CDN مباشر للتشغيل الفوري والتصميم التجاوبي) -->
@@ -45,9 +79,6 @@
       }
     };
   </script>
-
-  <!-- ملف التنسيقات المدمجة والمحلية -->
-  <link rel="stylesheet" href="/src/index.css">
 
   <style>
     * {
@@ -92,8 +123,14 @@
         </span>
       </div>
 
-      <!-- أدوات التحكم: اختيار اللغة وسجل الإشعارات الموحد -->
+      <!-- أدوات التحكم: زر التثبيت PWA، اختيار اللغة، وسجل الإشعارات الموحد -->
       <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- زر تثبيت التطبيق كـ PWA -->
+        <button type="button" id="btn-pwa-install" onclick="window.triggerPWAInstall()" class="hidden h-9 px-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 active:scale-95 text-white text-xs font-black items-center gap-1.5 transition cursor-pointer shadow-xs" title="تثبيت التطبيق على جهازك">
+          <i class="fa-solid fa-download text-xs"></i>
+          <span id="ui-install-text" class="hidden sm:inline">تثبيت</span>
+        </button>
+
         <!-- زر واختيار اللغة المحسّن والأنيق -->
         <div class="relative h-9 flex items-center bg-slate-100 hover:bg-slate-200 border border-slate-200/90 rounded-xl px-2.5 transition active:scale-98 shadow-2xs group focus-within:ring-2 focus-within:ring-teal-500/25">
           <i class="fa-solid fa-globe text-teal-600 text-xs shrink-0 pointer-events-none me-1.5 transition-transform group-hover:rotate-12"></i>
@@ -340,6 +377,42 @@
     </div>
   </div>
 
+  <!-- ==================== نافذة إرشادات التثبيت على أجهزة iOS Safari ==================== -->
+  <div id="ios-install-modal" onclick="if(event.target===this) window.closeIOSInstallModal()" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full space-y-4 shadow-2xl text-center">
+      <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto shadow-inner">
+        <i class="fa-brands fa-apple text-2xl"></i>
+      </div>
+      <h4 class="font-bold text-sm text-slate-900" id="ui-ios-title">تثبيت Timetodo على iPhone / iPad</h4>
+      <div class="text-xs text-slate-600 space-y-2.5 text-start bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+        <p id="ui-ios-step1" class="flex items-start gap-2 font-medium">
+          <i class="fa-solid fa-arrow-up-from-bracket text-teal-600 mt-0.5 shrink-0 text-sm"></i>
+          <span>1. اضغط على زر المشاركة (Share) في شريط Safari أسفل الشاشة.</span>
+        </p>
+        <p id="ui-ios-step2" class="flex items-start gap-2 font-medium">
+          <i class="fa-solid fa-plus-square text-teal-600 mt-0.5 shrink-0 text-sm"></i>
+          <span>2. مرر للأسفل واضغط على "إضافة إلى الشاشة الرئيسية" (Add to Home Screen).</span>
+        </p>
+      </div>
+      <button type="button" onclick="window.closeIOSInstallModal()" class="btn-touch w-full py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-black text-xs shadow-md shadow-teal-600/20 cursor-pointer" id="btn-close-ios-modal">
+        حسناً، فهمت
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== شريط التنبيه بحالة الاتصال بالإنترنت / وضع عدم الاتصال ==================== -->
+  <div id="offline-toast" class="hidden fixed bottom-4 inset-x-4 max-w-md mx-auto z-50 transition-all duration-300 transform translate-y-0">
+    <div id="offline-toast-inner" class="bg-slate-900/95 text-white backdrop-blur-md px-4 py-3 rounded-2xl shadow-xl border border-slate-700/50 flex items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <span id="offline-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+        <span id="offline-toast-message" class="font-bold text-slate-100 truncate">أنت في وضع عدم الاتصال — التطبيق يعمل بشكل كامل بدون إنترنت.</span>
+      </div>
+      <button type="button" onclick="document.getElementById('offline-toast').classList.add('hidden')" class="text-slate-400 hover:text-white p-1 cursor-pointer shrink-0">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+  </div>
+
   <!-- ==================== 6. البرمجة والمنطق الكامل للتطبيق ==================== -->
   <script>
     // --- 1. قاموس اللغات الشامل والمتكامل ---
@@ -395,7 +468,15 @@
         notifUpcoming: '⏰ اقترب موعد',
         notifDueSoon: 'الموعد بعد قليل عند الساعة',
         notifTimeNow: '🔔 حان موعد المهمة الآن',
-        notifCurrentTime: 'الوقت الآن'
+        notifCurrentTime: 'الوقت الآن',
+        installApp: 'تثبيت التطبيق',
+        installBtnText: 'تثبيت',
+        offlineMsg: 'أنت في وضع عدم الاتصال — التطبيق يعمل بشكل كامل بدون إنترنت.',
+        onlineMsg: 'تمت استعادة الاتصال بالإنترنت بنجاح!',
+        iosTitle: 'تثبيت Timetodo على iPhone / iPad',
+        iosStep1: '1. اضغط على زر المشاركة (Share) في شريط Safari أسفل الشاشة.',
+        iosStep2: '2. مرر للأسفل واضغط على "إضافة إلى الشاشة الرئيسية" (Add to Home Screen).',
+        iUnderstand: 'حسناً، فهمت'
       },
       en: {
         appName: 'My Achievements',
@@ -448,7 +529,15 @@
         notifUpcoming: '⏰ Upcoming task',
         notifDueSoon: 'Task starting soon at',
         notifTimeNow: '🔔 Task is due now',
-        notifCurrentTime: 'Current time'
+        notifCurrentTime: 'Current time',
+        installApp: 'Install App',
+        installBtnText: 'Install',
+        offlineMsg: 'You are offline — Timetodo works completely offline.',
+        onlineMsg: 'Internet connection restored!',
+        iosTitle: 'Install Timetodo on iPhone / iPad',
+        iosStep1: '1. Tap the Share button in Safari toolbar.',
+        iosStep2: '2. Scroll down and tap "Add to Home Screen".',
+        iUnderstand: 'Got it'
       },
       fr: {
         appName: 'Mes Succès',
@@ -501,7 +590,15 @@
         notifUpcoming: '⏰ Tâche à venir',
         notifDueSoon: 'La tâche commence bientôt à',
         notifTimeNow: "🔔 C'est l'heure de la tâche",
-        notifCurrentTime: 'Heure actuelle'
+        notifCurrentTime: 'Heure actuelle',
+        installApp: "Installer l'application",
+        installBtnText: 'Installer',
+        offlineMsg: 'Mode hors ligne — Timetodo fonctionne totalement sans connexion.',
+        onlineMsg: 'Connexion Internet rétablie !',
+        iosTitle: 'Installer sur iPhone / iPad',
+        iosStep1: '1. Appuyez sur le bouton Partager dans Safari.',
+        iosStep2: '2. Choisissez "Sur l\'écran d\'accueil".',
+        iUnderstand: 'Compris'
       },
       es: {
         appName: 'Mis Logros',
@@ -554,7 +651,15 @@
         notifUpcoming: '⏰ Tarea próxima',
         notifDueSoon: 'La tarea empieza pronto a las',
         notifTimeNow: '🔔 Es hora de la tarea',
-        notifCurrentTime: 'Hora actual'
+        notifCurrentTime: 'Hora actual',
+        installApp: 'Instalar aplicación',
+        installBtnText: 'Instalar',
+        offlineMsg: 'Modo sin conexión — Timetodo funciona totalmente sin Internet.',
+        onlineMsg: '¡Conexión a Internet restablecida!',
+        iosTitle: 'Instalar en iPhone / iPad',
+        iosStep1: '1. Toca el botón Compartir en Safari.',
+        iosStep2: '2. Selecciona "Añadir a pantalla de inicio".',
+        iUnderstand: 'Entendido'
       },
       zh: {
         appName: '我的成就',
@@ -607,7 +712,15 @@
         notifUpcoming: '⏰ 任务即将到来',
         notifDueSoon: '任务即将于以下时间开始：',
         notifTimeNow: '🔔 任务时间到了',
-        notifCurrentTime: '当前时间'
+        notifCurrentTime: '当前时间',
+        installApp: '安装应用',
+        installBtnText: '安装',
+        offlineMsg: '当前处于离线模式 — Timetodo 无需网络即可完全正常运行。',
+        onlineMsg: '已恢复网络连接！',
+        iosTitle: '在 iPhone / iPad 上安装 Timetodo',
+        iosStep1: '1. 在 Safari 工具栏中点击“分享”按钮。',
+        iosStep2: '2. 向下滑动并点击“添加到主屏幕”。',
+        iUnderstand: '知道了'
       }
     };
 
@@ -617,7 +730,6 @@
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     }
 
-    // استرجاع اللغة المحفوظة في المتصفح أو اعتماد العربية كافتراضي
     let currentLang = 'ar';
     try {
       const savedLang = localStorage.getItem('my_achievements_app_lang');
@@ -745,7 +857,6 @@
         carousel.appendChild(btn);
       }
 
-      // ضبط نصوص التاريخ المختار وتسمية اليوم النسبي (اليوم، أمس، غداً)
       const diff = Math.round((new Date(selectedDate.replace(/-/g, '/')) - new Date(getTodayKey().replace(/-/g, '/'))) / (1000 * 60 * 60 * 24));
       let relLabel = '';
       if (diff === 0) relLabel = TRANSLATIONS[currentLang].today;
@@ -769,7 +880,7 @@
       if (picker) picker.value = selectedDate;
     };
 
-    // --- 5. لوحة وقت الإشعار المسبق مع دعم الترجمة بالكامل ---
+    // --- 5. لوحة وقت الإشعار المسبق ---
     window.toggleAdvanceReminder = function(show) {
       const panel = document.getElementById('advance-rem-panel');
       const preview = document.getElementById('custom-offset-preview');
@@ -1170,7 +1281,7 @@
       }
     }
 
-    // تحقق من المواعيد كل 5 ثوانٍ
+    // فحص دوري للمواعيد والتنبيهات كل 5 ثوانٍ
     setInterval(() => {
       const now = new Date();
       const curTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -1183,7 +1294,6 @@
         const taskTarget = new Date(task.date.replace(/-/g, '/'));
         taskTarget.setHours(tH, tM, 0, 0);
 
-        // 1. الإشعار المسبق
         if (task.hasAdvanceReminder && !task.advanceNotified) {
           const advOffsetMs = ((task.remDays || 0) * 86400 + (task.remHours || 0) * 3600 + (task.remMins || 0) * 60) * 1000;
           const advanceTarget = new Date(taskTarget.getTime() - advOffsetMs);
@@ -1204,7 +1314,6 @@
           }
         }
 
-        // 2. الإشعار الدقيق عند وقت المهمة
         if (!task.exactNotified) {
           if (now >= taskTarget && now <= new Date(taskTarget.getTime() + 120000)) {
             task.exactNotified = true;
@@ -1224,7 +1333,7 @@
       });
     }, 5000);
 
-    // --- 12. التنقل وتبديل اللغة مع الحفظ في localStorage والترجمة الشاملة ---
+    // --- 12. تبديل اللغات مع الترجمة الكاملة ---
     window.jumpToToday = function() {
       selectedDate = getTodayKey();
       window.renderApp();
@@ -1241,7 +1350,6 @@
       if (!TRANSLATIONS[lang]) lang = 'ar';
       currentLang = lang;
 
-      // حفظ اللغة في localStorage لتبقى عند التحديث
       try {
         localStorage.setItem('my_achievements_app_lang', lang);
       } catch(e) {}
@@ -1261,7 +1369,6 @@
         if (el) el.textContent = txt;
       };
 
-      // ترجمة جميع العناصر والقوائم والأزرار بالكامل
       setText('ui-today-btn', t.today);
       setText('ui-other-date-text', t.otherDate);
       setText('notif-perm-text', t.notifications);
@@ -1285,6 +1392,21 @@
       setText('btn-delete-single', t.delSingle);
       setText('btn-delete-series', t.delSeries);
       setText('btn-cancel-modal', t.cancel);
+      setText('ui-install-text', t.installBtnText);
+      setText('ui-ios-title', t.iosTitle);
+      setText('btn-close-ios-modal', t.iUnderstand);
+
+      const step1El = document.getElementById('ui-ios-step1');
+      if (step1El) {
+        step1El.innerHTML = `<i class="fa-solid fa-arrow-up-from-bracket text-teal-600 mt-0.5 shrink-0 text-sm"></i><span>${t.iosStep1}</span>`;
+      }
+      const step2El = document.getElementById('ui-ios-step2');
+      if (step2El) {
+        step2El.innerHTML = `<i class="fa-solid fa-plus-square text-teal-600 mt-0.5 shrink-0 text-sm"></i><span>${t.iosStep2}</span>`;
+      }
+
+      const pwaBtn = document.getElementById('btn-pwa-install');
+      if (pwaBtn) pwaBtn.title = t.installApp;
 
       const placeholderInput = document.getElementById('task-title-input');
       if (placeholderInput) placeholderInput.placeholder = t.taskPlaceholder;
@@ -1298,6 +1420,11 @@
       const sum = document.getElementById('habit-duration-summary');
       if (sum) sum.textContent = habitDurationDays + ' ' + t.habitSummaryDays;
 
+      if (!navigator.onLine) {
+        const offMsg = document.getElementById('offline-toast-message');
+        if (offMsg) offMsg.textContent = t.offlineMsg;
+      }
+
       window.renderApp();
     };
 
@@ -1308,15 +1435,161 @@
       window.onOffsetInputChange();
       window.renderNotifications();
       updateNotificationButton();
+      checkPWAInstallVisibility();
     };
 
-    // تشغيل التطبيق فور اكتمال تحميل الصفحة وتطبيق اللغة المحفوظة
+    // --- 13. إمكانيات PWA والتثبيت وحالة الاتصال ---
+    let deferredPwaPrompt = null;
+    const isIOSDevice = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()) && !window.MSStream;
+    const isAppStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator).standalone === true;
+
+    function checkPWAInstallVisibility() {
+      const installBtn = document.getElementById('btn-pwa-install');
+      if (!installBtn) return;
+      if (isAppStandalone) {
+        installBtn.classList.add('hidden');
+        installBtn.classList.remove('flex');
+        return;
+      }
+      if (deferredPwaPrompt || isIOSDevice) {
+        installBtn.classList.remove('hidden');
+        installBtn.classList.add('flex');
+      } else {
+        installBtn.classList.add('hidden');
+        installBtn.classList.remove('flex');
+      }
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPwaPrompt = e;
+      checkPWAInstallVisibility();
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPwaPrompt = null;
+      checkPWAInstallVisibility();
+    });
+
+    window.triggerPWAInstall = function() {
+      if (deferredPwaPrompt) {
+        deferredPwaPrompt.prompt();
+        deferredPwaPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult && choiceResult.outcome === 'accepted') {
+            deferredPwaPrompt = null;
+            checkPWAInstallVisibility();
+          }
+        });
+      } else if (isIOSDevice) {
+        const modal = document.getElementById('ios-install-modal');
+        if (modal) modal.classList.remove('hidden');
+      }
+    };
+
+    window.closeIOSInstallModal = function() {
+      const modal = document.getElementById('ios-install-modal');
+      if (modal) modal.classList.add('hidden');
+    };
+
+    function updateOnlineStatus(online) {
+      const toast = document.getElementById('offline-toast');
+      const dot = document.getElementById('offline-status-dot');
+      const msg = document.getElementById('offline-toast-message');
+      if (!toast || !dot || !msg) return;
+
+      const t = TRANSLATIONS[currentLang] || TRANSLATIONS.ar;
+      if (!online) {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0';
+        msg.textContent = t.offlineMsg;
+        toast.classList.remove('hidden');
+      } else {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0';
+        msg.textContent = t.onlineMsg;
+        toast.classList.remove('hidden');
+        setTimeout(() => {
+          if (navigator.onLine) {
+            toast.classList.add('hidden');
+          }
+        }, 3500);
+      }
+    }
+
+    window.addEventListener('offline', () => updateOnlineStatus(false));
+    window.addEventListener('online', () => updateOnlineStatus(true));
+
+    if (!navigator.onLine) {
+      setTimeout(() => updateOnlineStatus(false), 500);
+    }
+
+    // ==================== 14. كود الـ Service Worker المدمج بالكامل (Inline Self-Contained) ====================
+    // يتم إنشاء الـ Service Worker برمجياً من كود نصي وتحويله إلى Blob URL ليتم تسجيله دون الحاجة لملف sw.js خارجي!
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        const swScript = `
+          const CACHE_NAME = 'timetodo-standalone-v1';
+          
+          self.addEventListener('install', (e) => {
+            self.skipWaiting();
+          });
+
+          self.addEventListener('activate', (e) => {
+            e.waitUntil(
+              caches.keys().then((keys) => {
+                return Promise.all(
+                  keys.map((k) => {
+                    if (k !== CACHE_NAME) return caches.delete(k);
+                  })
+                );
+              }).then(() => self.clients.claim())
+            );
+          });
+
+          self.addEventListener('fetch', (e) => {
+            const req = e.request;
+            if (req.method !== 'GET') return;
+
+            // الاستجابة من الكاش أولاً أو الشبكة ثم التخزين التلقائي
+            e.respondWith(
+              caches.match(req).then((cached) => {
+                const networkFetch = fetch(req).then((res) => {
+                  if (res && (res.status === 200 || res.type === 'opaque')) {
+                    const resClone = res.clone();
+                    caches.open(CACHE_NAME).then((c) => c.put(req, resClone));
+                  }
+                  return res;
+                }).catch(() => cached || new Response('Offline', { status: 503 }));
+
+                return cached || networkFetch;
+              })
+            );
+          });
+        `;
+
+        try {
+          const blob = new Blob([swScript], { type: 'application/javascript' });
+          const swUrl = URL.createObjectURL(blob);
+          
+          // محاولة تسجيل الـ Blob أولاً، أو الرجوع للملف إذا كان متاحاً في السيرفر
+          navigator.serviceWorker.register(swUrl, { scope: './' }).then((reg) => {
+            console.log('Embedded Service Worker registered successfully:', reg.scope);
+          }).catch(() => {
+            navigator.serviceWorker.register('/sw.js').catch((err) => console.log(err));
+          });
+        } catch(e) {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+      });
+    }
+
+    // تشغيل التطبيق فور اكتمال تحميل الصفحة
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         window.changeLanguage(currentLang);
+        checkPWAInstallVisibility();
       });
     } else {
       window.changeLanguage(currentLang);
+      checkPWAInstallVisibility();
     }
   </script>
 </body>
